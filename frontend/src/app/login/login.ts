@@ -5,10 +5,14 @@ import {MatCheckbox} from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-login',
-  imports: [MatIconModule, NgStyle, MatCheckbox],
+  imports: [MatIconModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
 export class Login {
+  activeTab: 'login' | 'register' = 'login';
 
+  switchTab(tab: 'login' | 'register') {
+    this.activeTab = tab;
+  }
 }

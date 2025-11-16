@@ -6,10 +6,11 @@
   <h1>Academic Management System</h1>
   <div class="form-wrapper">
     <div class="tab-wrapper">
-      <div class="login">
+      <div class="tab-slider" [class.slide-right]="activeTab === 'register'"></div>
+      <div class="login" [class.active]="activeTab === 'login'" (click)="switchTab('login')">
         <p>Login</p>
       </div>
-      <div class="register">
+      <div class="register" [class.active]="activeTab === 'register'" (click)="switchTab('register')">
         <p>Register</p>
       </div>
     </div>
