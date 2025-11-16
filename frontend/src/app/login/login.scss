@@ -1,0 +1,178 @@
+@use '../../styles' as *;
+
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: $neutral-300;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 30%;
+  height: 80%;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $brand-500;
+  border-radius: 9999px;
+  width: 128px;
+  height: 128px;
+}
+
+.icon mat-icon {
+  color: $neutral-100;
+  transform: scale(3);
+}
+
+.form-wrapper {
+  width: 90%;
+  background-color: $neutral-100;
+  border-radius: 30px;
+  box-shadow: 0 5px 20px 0 rgba(194, 194, 194, 0.25);
+  padding: 16px;
+}
+
+.tab-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 12px;
+  gap: 12px;
+  border-radius: 30px;
+  background-color: $neutral-300;
+}
+
+.tab-wrapper .login {
+  padding: 12px;
+  background-color: $neutral-100;
+  border-radius: 20px;
+  width: 50%;
+  text-align: center;
+}
+
+.tab-wrapper .register {
+  padding: 12px;
+  width: 50%;
+  text-align: center;
+}
+
+.email-wrapper {
+  margin-top: 24px
+}
+
+.email-wrapper p {
+  color: $neutral-800;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.email-wrapper input {
+  width: 100%;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid $neutral-600;
+  background-color: $neutral-200;
+  margin-top: 12px;
+}
+
+.password-wrapper {
+  margin-top: 24px
+}
+
+.password-wrapper p {
+  color: $neutral-800;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.password-wrapper input {
+  width: 100%;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid $neutral-600;
+  background-color: $neutral-200;
+  margin-top: 12px;
+}
+
+.extras-wrapper {
+  display: flex;
+  margin-top: 16px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.extras-wrapper p {
+  color: $neutral-600;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.extras-wrapper input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid $neutral-600;
+  border-radius: 4px;
+  background-color: $neutral-100;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.extras-wrapper input[type="checkbox"]:hover {
+  border-color: $brand-500;
+}
+
+.extras-wrapper input[type="checkbox"]:checked {
+  background-color: $brand-500;
+  border-color: $brand-500;
+}
+
+.extras-wrapper input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.extras-wrapper .remember {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-button {
+  margin-top: 12px;
+  width: 100%;
+  border-radius: 12px;
+  background-color: $brand-400;
+  border: none;
+  color: $neutral-100;
+  font-size: 16px;
+  padding: 12px 0px;
+}
+
+.login-button:hover {
+  background-color: $brand-500;
+  cursor: pointer;
+}
+

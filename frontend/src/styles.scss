@@ -1,1 +1,30 @@
-/* You can add global styles to this file, and also import other style files */
+$neutral-100: #ffffff;
+$neutral-200: #f3f3f3;
+$neutral-300: #dfdfdf;
+$neutral-400: #a3a3a3;
+$neutral-500: #858585;
+$neutral-600: #666666;
+$neutral-700: #2c2c2c;
+$neutral-800: #000000;
+$success-100: #abe0b7;
+$success-200: #75897c;
+$success-300: #609865;
+$success-400: #4b7550;
+$error-100: #d07b7b;
+$error-200: #bc4343;
+$error-300: #712828;
+$brand-100: #dce6ef;
+$brand-200: #b7ccde;
+$brand-300: #6f93af;
+$brand-400: #245a91;
+$brand-500: #153967;
+
+body {
+  font-family: Poppins, sans-serif;
+}
+
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
