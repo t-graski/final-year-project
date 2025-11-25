@@ -1,0 +1,177 @@
+@use 'styles' as *;
+
+.dashboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  width: 100%;
+  gap: 24px;
+}
+
+.search-card {
+  min-width: 80%;
+  max-width: 80%;
+}
+
+.search-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-bar {
+  position: relative;
+  width: 100%;
+
+  input {
+    width: 100%;
+    border-radius: 8px;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    border: 1px solid rgba(102, 102, 102, 0.5);
+    background-color: $neutral-300;
+    color: $neutral-600;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  mat-icon {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $neutral-600;
+    pointer-events: none;
+  }
+}
+
+.toggle-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: $neutral-100;
+  margin-left: auto;
+}
+
+.toggle-button {
+  border: 1px solid $neutral-300;
+  background: $neutral-100;
+  color: $neutral-800;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  white-space: nowrap;
+  line-height: 1;
+
+  &:hover {
+  }
+}
+
+.toggle-button--active {
+  background-color: $brand-500;
+  color: $neutral-100;
+  border-color: $brand-500;
+  box-shadow: 0 0 0 1px rgba($brand-500, 0.3);
+}
+
+.result {
+  margin-left: 2px;
+  margin-top: 4px;
+  color: $neutral-500;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.students-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-column-gap: 12px;
+  min-width: 80%;
+  max-width: 80%;
+}
+
+.student-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba($brand-400, 0.5);
+  border-radius: 9999px;
+  width: 64px;
+  height: 64px;
+}
+
+.student-icon mat-icon {
+  color: $brand-500;
+  transform: scale(2);
+}
+
+.student-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .name {
+    color: $neutral-700;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .id {
+    color: $neutral-600;
+    font-size: 18px;
+    font-weight: 400;
+  }
+}
+
+.student-course {
+  display: block;
+  margin-top: 16px;
+  margin-left: 4px;
+
+  .course {
+    color: $neutral-500;
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .year {
+    color: $neutral-500;
+    font-size: 16px;
+    font-weight: 400;
+  }
+}
+
+.student-attendance {
+  display: block;
+  margin-top: 16px;
+  margin-left: 4px;
+  margin-right: 4px;
+
+  .student-attendance-labels {
+    display: flex;
+    justify-content: space-between;
+
+    .student-attendance-label {
+      color: $neutral-600;
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    .student-attendance-percentage {
+      color: $success-400;
+      font-size: 16px;
+      font-weight: 700;
+    }
+  }
+
+  .student-attendance-bar {
+    display: block;
+    margin-top: 8px;
+  }
+}

@@ -1,0 +1,21 @@
+<div class="wrapper">
+  <div class="left-wrapper">
+    <div class="icon">
+      <mat-icon aria-hidden="false" fontIcon="school"></mat-icon>
+    </div>
+    <div class="title">
+      <h2>{{ title }}</h2>
+      <p>{{ subTitle }}</p>
+    </div>
+  </div>
+  <div class="right-wrapper">
+    @for (link of links.reverse(); track link.label) {
+      <div class="navbar-link">
+        @if (link.icon) {
+          <mat-icon aria-hidden="false" fontIcon="{{link.icon}}"></mat-icon>
+        }
+        <p>{{ link.label }}</p>
+      </div>
+    }
+  </div>
+</div>

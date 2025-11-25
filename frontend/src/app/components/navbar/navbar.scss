@@ -1,0 +1,74 @@
+@use 'styles' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  gap: 24px;
+  background-color: $neutral-100;
+  box-shadow: 0 5px 20px rgba(194, 194, 194, 0.25);
+  padding: 6px;
+}
+
+.left-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+}
+
+.left-wrapper h2 {
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.left-wrapper p {
+  color: $neutral-600;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $brand-400;
+  border-radius: 9999px;
+  width: 64px;
+  height: 64px;
+}
+
+.icon mat-icon {
+  color: $neutral-100;
+  transform: scale(2);
+}
+
+.right-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-link {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  border: 1px solid $neutral-600;
+  padding: 6px;
+  gap: 4px;
+}
+
+.navbar-link p {
+  color: $neutral-800;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.navbar-link:hover {
+  background-color: $neutral-200;
+  cursor: pointer;
+}

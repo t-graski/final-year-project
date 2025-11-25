@@ -1,0 +1,59 @@
+<app-navbar
+  [title]="headline"
+  [subTitle]="subHeadline"
+  [links]="navLinks"
+></app-navbar>
+<div class="dashboard-wrapper">
+  <app-card class="search-card" [clickable]="false">
+    <div class="search-wrapper">
+      <div class="search-bar">
+        <input type="text" placeholder="Search by student name or id..."/>
+        <mat-icon aria-hidden="false" fontIcon="search"></mat-icon>
+      </div>
+      <div class="toggle-wrapper">
+        @for (option of toggleOptions; track option.id) {
+          <button
+            class="toggle-button"
+            [class.toggle-button--active]="activeToggle === option.id"
+            (click)="setActive(option.id)"
+          >{{ option.label }}
+          </button>
+        }
+      </div>
+    </div>
+    <p class="result">Showing 4 students in your courses</p>
+  </app-card>
+
+  <div class="students-wrapper">
+    @for (student of students; track student.id) {
+      <app-card class="student-card" [clickable]="false">
+        <div class="student-info">
+          <div class="student-icon">
+            <mat-icon aria-hidden="false" fontIcon="school"></mat-icon>
+          </div>
+          <div class="student-name">
+            <p class="name">{{ student.name }}</p>
+            <p class="id">{{ student.id }}</p>
+          </div>
+        </div>
+        <div class="student-course">
+          <p class="course">{{ student.course }}</p>
+          <p class="year">Year {{ student.year }}</p>
+        </div>
+        <div class="student-attendance">
+          <div class="student-attendance-labels">
+            <p class="student-attendance-label">Overall Attendance</p>
+            <p class="student-attendance-percentage"
+               [style.color]="student.attendance | attendanceColor"> {{ student.attendance }}%</p>
+          </div>
+          <app-progress-bar
+            class="student-attendance-bar"
+            [value]="student.attendance"
+            [showValue]="false"
+            [color]="student.attendance | attendanceColor"
+          ></app-progress-bar>
+        </div>
+      </app-card>
+    }
+  </div>
+</div>
