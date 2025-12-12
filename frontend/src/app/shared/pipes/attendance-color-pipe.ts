@@ -5,7 +5,7 @@ import {Pipe, PipeTransform} from '@angular/core';
   standalone: true
 })
 export class AttendanceColorPipe implements PipeTransform {
-  transform(value: number | null | undefined, ...args: unknown[]): string {
+  transform(value: number | null | undefined): string {
     if (value == null) {
       return "#e5e7eb";
     }

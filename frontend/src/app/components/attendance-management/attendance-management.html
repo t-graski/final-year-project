@@ -7,7 +7,8 @@
   <app-card class="search-card" [clickable]="false">
     <div class="search-wrapper">
       <div class="search-bar">
-        <input type="text" placeholder="Search by student name or id..."/>
+        <input [(ngModel)]="searchText" type="text"
+               placeholder="Search by student name or id..."/>
         <mat-icon aria-hidden="false" fontIcon="search"></mat-icon>
       </div>
       <div class="toggle-wrapper">
@@ -21,11 +22,12 @@
         }
       </div>
     </div>
-    <p class="result">Showing 4 students in your courses</p>
+    @let studentCount = filteredStudents().length;
+    <p class="result">Showing {{ studentCount }} student{{ studentCount === 1 ? '' : 's' }} in your courses</p>
   </app-card>
 
   <div class="students-wrapper">
-    @for (student of students; track student.id) {
+    @for (student of filteredStudents(); track student.id) {
       <app-card class="student-card" [clickable]="false">
         <div class="student-info">
           <div class="student-icon">
