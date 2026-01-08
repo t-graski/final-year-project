@@ -12,9 +12,9 @@ public class TokenService(IConfiguration cfg) : ITokenService
 {
     public string CreateAccessToken(User user)
     {
-        var jwt = cfg.GetSection("jwt");
+        var jwt = cfg.GetSection("Jwt");
         var issuer = jwt["Issuer"]!;
-        var audience = jwt["audience"]!;
+        var audience = jwt["Audience"]!;
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

@@ -3,9 +3,9 @@ using backend.data;
 using backend.dtos;
 using backend.errors;
 using backend.models;
+using backend.models.@base;
 using backend.services.interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens.Experimental;
 
 namespace backend.services.implementations;
 
@@ -82,5 +82,103 @@ public class UserService(AppDbContext db, ITokenService tokens) : IUserService
 
         var token = tokens.CreateAccessToken(user);
         return new AuthResultDto(user.Id, user.Email, user.Permissions, token);
+    }
+
+    public async Task<UserDetailDto> GetMeAsync(Guid meId)
+        => await GetByIdAsync(meId);
+
+    public async Task<PagedDto<UserSummaryDto>> GetUsersAsync(int page, int pageSize)
+    {
+        page = page <= 0 ? 1 : page;
+        pageSize = pageSize is < 1 or > 200 ? 25 : pageSize;
+
+        var query = db.Users.AsNoTracking();
+        var total = await query.LongCountAsync();
+
+        var items = await query
+            .OrderBy(u => u.Email)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(u => new UserSummaryDto(
+                u.Id,
+                u.Email,
+                u.IsActive,
+                u.Permissions,
+                u.LastLoginAtUtc
+            ))
+            .ToListAsync();
+
+        return new PagedDto<UserSummaryDto>(items, page, pageSize, total);
+    }
+
+    public async Task<UserDetailDto> GetByIdAsync(Guid userId)
+    {
+        var user = await db.Users.AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => new
+            {
+                u.Id,
+                u.Email,
+                u.IsActive,
+                u.Permissions,
+                u.CreatedAtUtc,
+                u.UpdatedAtUtc,
+                Roles = u.Roles.Where(r => !r.IsDeleted).Select(r => r.Role).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (user is null)
+        {
+            throw new AppException(404, "USER_NOT_FOUND", "User does not exist.");
+        }
+
+        return new UserDetailDto(
+            user.Id,
+            user.Email,
+            user.IsActive,
+            user.Permissions,
+            user.CreatedAtUtc,
+            user.UpdatedAtUtc,
+            user.Roles
+        );
+    }
+
+    public Task<UserDetailDto> CreateAsync(CreateUserDto dto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task SetStatusAsync(Guid userId, bool isActive)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user is null)
+        {
+            throw new AppException(404, "USER_NOT_FOUND", "User does not exist.");
+        }
+
+        user.IsActive = isActive;
+        await db.SaveChangesAsync();
+    }
+
+    public async Task SetPermissionsAsync(Guid userId, long permissions)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user is null)
+        {
+            throw new AppException(404, "USER_NOT_FOUND", "User does not exist.");
+        }
+
+        user.Permissions = permissions;
+        await db.SaveChangesAsync();
+    }
+
+    public Task AssignRoleAsync(Guid userId, SystemRole role)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task RemoveRoleAsync(Guid userId, SystemRole role)
+    {
+        throw new NotImplementedException();
     }
 }
