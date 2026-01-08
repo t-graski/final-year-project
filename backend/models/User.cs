@@ -8,6 +8,8 @@ public class User : SoftDeletableEntity<Guid>
     public string PasswordHash { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
+    public long Permissions { get; set; }
+
     public DateTimeOffset? EmailVerifiedAtUtc { get; set; }
 
     public DateTimeOffset? LastLoginAtUtc { get; set; }
@@ -15,7 +17,7 @@ public class User : SoftDeletableEntity<Guid>
     public DateTimeOffset? LockOutUntilUtc { get; set; }
 
     public ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
-    
+
     public Student? Student { get; set; }
     public Staff? Staff { get; set; }
 }

@@ -69,9 +69,4 @@
     <_ContentIncludedByDefault Remove="C:\Users\tobia\.nuget\packages\microsoft.codeanalysis.workspaces.msbuild\4.14.0\contentFiles\any\any\BuildHost-netcore\zh-Hant\System.CommandLine.resources.dll" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="services\implementations\" />
-    <Folder Include="services\interfaces\" />
-  </ItemGroup>
-
 </Project>
