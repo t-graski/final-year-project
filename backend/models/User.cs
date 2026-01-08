@@ -15,4 +15,7 @@ public class User : SoftDeletableEntity<Guid>
     public DateTimeOffset? LockOutUntilUtc { get; set; }
 
     public ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
+    
+    public Student? Student { get; set; }
+    public Staff? Staff { get; set; }
 }

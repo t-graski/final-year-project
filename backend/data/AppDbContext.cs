@@ -1,5 +1,7 @@
 ﻿using backend.models;
+using backend.models.@base;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace backend.data;
 
@@ -7,11 +9,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<Student> Students => Set<Student>();
+    public DbSet<Staff> Staff => Set<Staff>();
+    public DbSet<Course> Courses => Set<Course>();
+    public DbSet<Module> Modules => Set<Module>();
+    public DbSet<ModuleStaff> ModuleStaff => Set<ModuleStaff>();
+
+    public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
         base.OnModelCreating(b);
 
+        // USERS
         b.Entity<User>(e =>
         {
             e.ToTable("users");
@@ -43,5 +53,168 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(x => new { x.UserId, x.Role })
                 .IsUnique();
         });
+
+        // STUDENT / STAFF
+        b.Entity<Student>(e =>
+        {
+            e.ToTable("students");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.StudentNumber).IsRequired();
+            e.HasIndex(x => x.StudentNumber).IsUnique();
+
+            e.HasOne(x => x.User)
+                .WithOne(u => u.Student)
+                .HasForeignKey<Student>(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<Staff>(e =>
+        {
+            e.ToTable("staff");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.StaffNumber).IsRequired();
+            e.HasIndex(x => x.StaffNumber).IsUnique();
+
+            e.HasOne(x => x.User)
+                .WithOne(u => u.Staff)
+                .HasForeignKey<Staff>(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // --- COURSE / MODULE ---
+        b.Entity<Course>(e =>
+        {
+            e.ToTable("courses");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.CourseCode).IsRequired();
+            e.Property(x => x.Title).IsRequired();
+            e.HasIndex(x => x.CourseCode).IsUnique();
+        });
+
+        b.Entity<Module>(e =>
+        {
+            e.ToTable("modules");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.ModuleCode).IsRequired();
+            e.Property(x => x.Title).IsRequired();
+            e.HasIndex(x => new { x.CourseId, x.ModuleCode }).IsUnique();
+
+            e.HasOne(x => x.Course)
+                .WithMany(c => c.Modules)
+                .HasForeignKey(x => x.CourseId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<ModuleStaff>(e =>
+        {
+            e.ToTable("module_staff");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.ModuleId, x.StaffId }).IsUnique();
+
+            e.HasOne(x => x.Module)
+                .WithMany(m => m.TeachingStaff)
+                .HasForeignKey(x => x.ModuleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(x => x.Staff)
+                .WithMany(s => s.ModuleStaff)
+                .HasForeignKey(x => x.StaffId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<AuditEvent>(e =>
+        {
+            e.ToTable("audit_events");
+            e.HasKey(x => x.AuditEventId);
+        });
+    }
+
+    public Guid? ActorUserId { get; set; }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    {
+        var now = DateTimeOffset.UtcNow;
+        var actorId = ActorUserId;
+
+        foreach (var entry in ChangeTracker.Entries<ISoftDeletable>())
+        {
+            if (entry.State != EntityState.Deleted) continue;
+
+            entry.State = EntityState.Modified;
+            entry.Entity.IsDeleted = true;
+            entry.Entity.DeletedAtUtc = now;
+            entry.Entity.DeletedByUserId = actorId;
+        }
+
+        foreach (var entry in ChangeTracker.Entries<IAuditable>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.CreatedAtUtc = now;
+                entry.Entity.CreatedByUserId = actorId;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedAtUtc = now;
+                entry.Entity.UpdatedByUserId = actorId;
+            }
+        }
+
+        var auditEvents = BuildAuditEvents(now);
+
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        if (auditEvents.Count > 0)
+        {
+            AuditEvents.AddRange(auditEvents);
+            await base.SaveChangesAsync(cancellationToken);
+        }
+
+        return result;
+    }
+
+    private List<AuditEvent> BuildAuditEvents(DateTimeOffset now)
+    {
+        var list = new List<AuditEvent>();
+
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.Entity is AuditEvent) continue;
+            if (entry.State is EntityState.Unchanged or EntityState.Detached) continue;
+
+            var action = entry.State switch
+            {
+                EntityState.Added => "INSERT",
+                EntityState.Modified => IsSoftDelete(entry) ? "SOFT_DELETE" : "UPDATE",
+                EntityState.Deleted => "HARD_DELETE",
+                _ => entry.State.ToString().ToUpperInvariant()
+            };
+
+            list.Add(new AuditEvent
+            {
+                OccuredAt = now,
+                ActorUserId = ActorUserId,
+                Action = action,
+                EntityType = entry.Metadata.ClrType.Name,
+                EntityId = GetPrimaryKeyString(entry)
+            });
+        }
+
+        return list;
+    }
+
+    private static bool IsSoftDelete(EntityEntry entry)
+    {
+        if (entry.Entity is not ISoftDeletable) return false;
+        var prop = entry.Property(nameof(ISoftDeletable.IsDeleted));
+        return prop is { IsModified: true, CurrentValue: true };
+    }
+
+    private static string GetPrimaryKeyString(EntityEntry entry)
+    {
+        var pk = entry.Metadata.FindPrimaryKey();
+        if (pk is null) return "UNKNOWN";
+        var parts = pk.Properties.Select(p => $"{p.Name}={entry.Property(p.Name).CurrentValue}");
+        return string.Join(";", parts);
     }
 }
