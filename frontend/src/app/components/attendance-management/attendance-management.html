@@ -1,21 +1,21 @@
 <app-navbar
   [title]="headline"
-  [subTitle]="subHeadline"
+  [subTitle]="welcomeMessage()"
   [links]="navLinks"
 ></app-navbar>
 <div class="dashboard-wrapper">
   <app-card class="search-card" [clickable]="false">
     <div class="search-wrapper">
       <div class="search-bar">
-        <input [(ngModel)]="searchText" type="text"
+        <input [(ngModel)]="searchText" (ngModelChange)="searchText.set($event)" type="text"
                placeholder="Search by student name or id..."/>
         <mat-icon aria-hidden="false" fontIcon="search"></mat-icon>
       </div>
       <div class="toggle-wrapper">
-        @for (option of toggleOptions; track option.id) {
+        @for (option of toggleOptions(); track option.id) {
           <button
             class="toggle-button"
-            [class.toggle-button--active]="activeToggle === option.id"
+            [class.toggle-button--active]="activeToggle() === option.id"
             (click)="setActive(option.id)"
           >{{ option.label }}
           </button>
@@ -23,7 +23,8 @@
       </div>
     </div>
     @let studentCount = filteredStudents().length;
-    <p class="result">Showing {{ studentCount }} student{{ studentCount === 1 ? '' : 's' }} in your courses</p>
+    <p class="result">Showing {{ studentCount }} student{{ studentCount === 1 ? '' : 's' }} in your
+      courses</p>
   </app-card>
 
   <div class="students-wrapper">

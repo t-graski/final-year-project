@@ -1,35 +1,46 @@
-<body>
 <div class="wrapper">
   <div class="icon">
     <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="school"></mat-icon>
   </div>
   <h1>Academic Management System</h1>
-  <div class="form-wrapper">
+
+  <form class="form-wrapper" [formGroup]="loginForm" (ngSubmit)="signIn()">
     <div class="tab-wrapper">
       <div class="tab-slider" [class.slide-right]="activeTab === 'register'"></div>
       <div class="login" [class.active]="activeTab === 'login'" (click)="switchTab('login')">
         <p>Login</p>
       </div>
-      <div class="register" [class.active]="activeTab === 'register'" (click)="switchTab('register')">
+      <div class="register" [class.active]="activeTab === 'register'"
+           (click)="switchTab('register')">
         <p>Register</p>
       </div>
     </div>
+
     <div class="email-wrapper">
       <p>Email</p>
-      <input type="text" placeholder="Enter your email" class="email-input">
+      <input type="text" placeholder="Enter your email" class="email-input" formControlName="email">
     </div>
+
     <div class="password-wrapper">
       <p>Password</p>
-      <input type="password" placeholder="Enter your password" class="password-input">
+      <input type="password" placeholder="Enter your password" class="password-input"
+             formControlName="password">
     </div>
+
     <div class="extras-wrapper">
       <div class="remember">
-        <input type="checkbox">
+        <input type="checkbox" formControlName="rememberMe">
         <p>Remember me?</p>
       </div>
       <p>Forgot password?</p>
     </div>
-    <button class="login-button" [routerLink]="['/dashboard']">Sign In</button>
-  </div>
+
+    @if (errorMessage) {
+      <p class="error">{{ errorMessage }}</p>
+    }
+
+    <button class="login-button" type="submit" [disabled]="loginForm.invalid || isSubmitting">
+      {{ isSubmitting ? 'Signing In...' : 'Sign In' }}
+    </button>
+  </form>
 </div>
-</body>

@@ -20,6 +20,16 @@ var jwt = builder.Configuration.GetSection("Jwt");
 var rawKey = jwt["Key"] ?? throw new InvalidOperationException("Missing Jwt:Key");
 var keyBytes = GetKeyBytes(rawKey);
 
+builder.Services.AddCors(opts =>
+{
+    opts.AddPolicy("Frontend", p =>
+    {
+        p.WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
@@ -109,7 +119,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
 var app = builder.Build();
+
+app.UseCors("Frontend");
 
 if (!app.Environment.IsDevelopment())
 {

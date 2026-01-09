@@ -1,4 +1,5 @@
-import {Component, computed, signal} from '@angular/core';
+import {Component, computed, inject, signal} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {NavLink} from '../../shared/models/nav-link.model';
 import {Navbar} from '../navbar/navbar';
 import {Card} from '../card/card';
@@ -6,6 +7,17 @@ import {MatIconModule} from '@angular/material/icon';
 import {ProgressBar} from '../progress-bar/progress-bar';
 import {AttendanceColorPipe} from '../../shared/pipes/attendance-color-pipe';
 import {FormsModule} from '@angular/forms';
+import {UserService} from '../../services/user.service';
+
+type Student = {
+  name: string;
+  id: string;
+  course: string;
+  year: number;
+  attendance: number;
+  attendanceTrend: string;
+  attendanceScore: string;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -21,25 +33,32 @@ import {FormsModule} from '@angular/forms';
   styleUrl: './attendance-management.component.scss',
 })
 export class AttendanceManagement {
+  private readonly userService = inject(UserService);
+
+  readonly currentUser = toSignal(this.userService.currentUser$);
+
+  readonly welcomeMessage = computed(() => {
+    const user = this.currentUser();
+    return user?.email ? `Welcome back, ${user.email}` : 'Welcome back, Guest';
+  });
+
   headline = "Student Dashboard";
-  subHeadline = "Welcome back, John Doe";
 
-  navLinks: NavLink[] = [
-    {label: "Logout", path: "/", icon: "logout"}
-  ];
+  navLinks: NavLink[] = [];
 
-  toggleOptions = [
+  toggleOptions = signal([
     {id: 'my-courses', label: 'My Courses'},
     {id: 'global', label: 'Global'}
-  ];
+  ]);
 
-  activeToggle: string = this.toggleOptions[0].id;
+  activeToggle = signal('my-courses');
 
   setActive(id: string) {
-    this.activeToggle = id;
+    this.activeToggle.set(id);
   }
 
-  students = [
+
+  students = signal<Student[]>([
     {
       name: "John Doe",
       id: "w1988854",
@@ -67,21 +86,19 @@ export class AttendanceManagement {
       attendanceTrend: "declining",
       attendanceScore: "High Risk"
     }
-  ]
+  ]);
 
   searchText = signal<string>("");
 
-  filteredStudents = computed(() => {
+  filteredStudents = computed<Array<Student>>(() => {
     const search = this.searchText().trim().toLowerCase();
 
-    if (!search) return this.students;
+    if (!search) return this.students();
 
-    console.log(this.searchText())
-    console.log(this.students[0].name.toLowerCase().includes("j"))
-
-    return this.students.filter(s => {
-      return s.name.toLowerCase().includes(this.searchText().toLowerCase()) ||
-        s.id.toString().includes(this.searchText())
+    return this.students().filter(s => {
+      return s.name.toLowerCase().includes(search) ||
+        s.id.toString().includes(search);
     });
   });
 }
+
