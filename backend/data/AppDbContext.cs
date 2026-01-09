@@ -138,12 +138,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         foreach (var entry in ChangeTracker.Entries<ISoftDeletable>())
         {
-            if (entry.State != EntityState.Deleted) continue;
+            if (entry.State == EntityState.Deleted)
+            {
+                entry.State = EntityState.Modified;
+                entry.Entity.IsDeleted = true;
+                entry.Entity.DeletedAtUtc = now;
+                entry.Entity.DeletedByUserId = actorId;
+            }
 
-            entry.State = EntityState.Modified;
-            entry.Entity.IsDeleted = true;
-            entry.Entity.DeletedAtUtc = now;
-            entry.Entity.DeletedByUserId = actorId;
+            if (entry.State == EntityState.Modified && IsSoftDelete(entry))
+            {
+                entry.Entity.DeletedAtUtc = now;
+                entry.Entity.DeletedByUserId = actorId;
+            }
         }
 
         foreach (var entry in ChangeTracker.Entries<IAuditable>())

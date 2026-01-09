@@ -1,29 +1,20 @@
 using System.Text;
+using System.Text.Json;
 using backend.auth;
 using backend.data;
 using backend.middleware;
+using backend.responses;
 using backend.services.implementations;
 using backend.services.interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-
-static byte[] GetKeyBytes(string key)
-{
-    try
-    {
-        return Convert.FromBase64String(key);
-    }
-    catch (FormatException)
-    {
-        return Encoding.UTF8.GetBytes(key);
-    }
-}
 
 var jwt = builder.Configuration.GetSection("Jwt");
 var rawKey = jwt["Key"] ?? throw new InvalidOperationException("Missing Jwt:Key");
@@ -44,83 +35,119 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
             ClockSkew = TimeSpan.FromSeconds(30)
         };
-
         o.Events = new JwtBearerEvents
         {
-            OnMessageReceived = ctx =>
+            OnChallenge = async ctx =>
             {
-                var auth = ctx.Request.Headers.Authorization.ToString();
-                Console.WriteLine($"AUTH HEADER RAW (event): `{auth}`");
+                // Avoid the default empty response
+                ctx.HandleResponse();
 
-                // Let the framework parse the bearer token normally.
-                // Only log a quick sanity check if a bearer-like value exists.
-                const string bearerPrefix = "Bearer ";
-                if (!string.IsNullOrWhiteSpace(auth) && auth.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    var token = auth.Substring(bearerPrefix.Length).Trim();
+                ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                ctx.Response.ContentType = "application/json";
 
-                    // Sanity check: header must be Base64Url decodable
-                    var firstDot = token.IndexOf('.');
-                    if (firstDot > 0)
-                    {
-                        var headerSegment = token.Substring(0, firstDot);
-                        try
-                        {
-                            _ = Base64UrlEncoder.DecodeBytes(headerSegment);
-                            Console.WriteLine("JWT HEADER BASE64URL: OK");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("JWT HEADER BASE64URL: FAIL - " + ex.Message);
-                        }
-                    }
-                }
+                var payload = ApiResponse<object>.Fail(
+                    StatusCodes.Status401Unauthorized,
+                    "UNAUTHORIZED",
+                    "Missing or invalid access token."
+                );
 
-                return Task.CompletedTask;
+                await ctx.Response.WriteAsync(JsonSerializer.Serialize(payload));
             },
-            OnAuthenticationFailed = ctx =>
+
+            OnForbidden = async ctx =>
             {
-                Console.WriteLine("JWT AUTH FAILED: " + ctx.Exception);
-                return Task.CompletedTask;
-            },
-            OnChallenge = ctx =>
-            {
-                Console.WriteLine("JWT CHALLENGE: " + ctx.Error + " - " + ctx.ErrorDescription);
-                return Task.CompletedTask;
+                ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+                ctx.Response.ContentType = "application/json";
+
+                var payload = ApiResponse<object>.Fail(
+                    StatusCodes.Status403Forbidden,
+                    "FORBIDDEN",
+                    "You do not have permission to perform this action."
+                );
+
+                await ctx.Response.WriteAsync(JsonSerializer.Serialize(payload));
             }
         };
     });
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
-var app = builder.Build();
+builder.Services.AddEndpointsApiExplorer();
 
-// Log what actually arrives from Postman
-app.Use(async (ctx, next) =>
+builder.Services.AddSwaggerGen(c =>
 {
-    var auth = ctx.Request.Headers.Authorization.ToString();
-    Console.WriteLine($"AUTH HEADER RAW: `{auth}`");
-    await next();
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "CoreData API",
+        Version = "v1"
+    });
+
+    c.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter JWT token only (no 'Bearer ' prefix)"
+    });
+
+    c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("bearer", document)] = []
+    });
 });
+
+var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
 
-app.UseMiddleware<DbActorMiddleware>();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoreData API v1");
+        c.RoutePrefix = "swagger";
+    });
+}
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthentication();
+
+app.UseMiddleware<DbActorMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
+return;
+
+static byte[] GetKeyBytes(string key)
+{
+    try
+    {
+        return Convert.FromBase64String(key);
+    }
+    catch (FormatException)
+    {
+        return Encoding.UTF8.GetBytes(key);
+    }
+}
