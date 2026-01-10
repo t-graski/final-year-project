@@ -35,7 +35,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         await db.SaveChangesAsync();
 
         var token = tokens.CreateAccessToken(user);
-        return new AuthResultDto(user.Id, user.Email, user.Permissions, token);
+        return new AuthResultDto(user.Id, user.Email, user.FirstName, user.LastName, user.Permissions, token);
     }
 
     public async Task<AuthResultDto> LoginAsync(LoginDto dto)
@@ -83,7 +83,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         await db.SaveChangesAsync();
 
         var token = tokens.CreateAccessToken(user);
-        return new AuthResultDto(user.Id, user.Email, user.Permissions, token);
+        return new AuthResultDto(user.Id, user.Email, user.FirstName, user.LastName, user.Permissions, token);
     }
 
     public async Task<UserDetailDto> GetMeAsync(Guid meId)

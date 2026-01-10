@@ -9,10 +9,8 @@
  */
 
 
-export interface CreateUserDto { 
-    email?: string | null;
-    password?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
+export interface StaffMiniDto { 
+    id?: string;
+    staffNumber?: string | null;
 }
 

@@ -8,8 +8,6 @@ public class Staff : SoftDeletableEntity<Guid>
     public User User { get; set; } = null!;
 
     public string StaffNumber { get; set; } = string.Empty;
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
 
     public string? Department { get; set; }
 

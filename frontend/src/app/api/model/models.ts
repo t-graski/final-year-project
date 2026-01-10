@@ -1,3 +1,6 @@
+export * from './adminUserListItemDto';
+export * from './adminUserListItemDtoApiResponse';
+export * from './adminUserListItemDtoIReadOnlyListApiResponse';
 export * from './apiError';
 export * from './assignRoleDto';
 export * from './authResultDto';
@@ -17,8 +20,10 @@ export * from './registerDto';
 export * from './setCourseEnrollmentStatusDto';
 export * from './setModuleEnrollmentStatusDto';
 export * from './setUserStatusDto';
+export * from './staffMiniDto';
 export * from './studentDashboardDto';
 export * from './studentDashboardDtoApiResponse';
+export * from './studentMiniDto';
 export * from './systemRole';
 export * from './userDetailDto';
 export * from './userDetailDtoApiResponse';

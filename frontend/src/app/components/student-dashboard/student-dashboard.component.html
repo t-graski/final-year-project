@@ -3,7 +3,11 @@
     <app-navbar
       [title]="'Student Dashboard'"
       [subTitle]="'Welcome back, ' + studentName()"
-      [links]="[]">
+      [links]="[
+        { label: 'Dashboard', path: '/dashboard', icon: 'home' },
+        { label: 'My Courses', path: '/dashboard', icon: 'school' },
+        { label: 'Attendance', path: '/attendance', icon: 'how_to_reg' }
+      ]">
     </app-navbar>
 
     <div class="dashboard-content">

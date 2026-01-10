@@ -20,7 +20,7 @@ public record UserDetailDto(
     IEnumerable<SystemRole> Roles
 );
 
-public record CreateUserDto(string Email, string Password);
+public record CreateUserDto(string Email, string Password, string FirstName, string LastName);
 
 public record SetUserStatusDto(bool IsActive);
 

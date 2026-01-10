@@ -1,5 +1,7 @@
-﻿using backend.errors;
+﻿using System.Text.Json;
+using backend.errors;
 using backend.responses;
+using Npgsql;
 
 namespace backend.middleware;
 
@@ -10,6 +12,16 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         try
         {
             await next(context);
+        }
+        catch (PostgresException ex) when (ex.SqlState == "23503")
+        {
+            context.Response.StatusCode = StatusCodes.Status409Conflict;
+            context.Response.ContentType = "application/json";
+
+            var payload = ApiResponse<object>.Fail(
+                409, "FK_CONSTRAINT", "Cannot delete because other records depend on it.");
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
         }
         catch (AppException ex)
         {

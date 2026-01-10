@@ -2,6 +2,7 @@
 README.md
 api.base.service.ts
 api.module.ts
+api/adminUser.service.ts
 api/api.ts
 api/auth.service.ts
 api/enrollments.service.ts
@@ -11,6 +12,9 @@ configuration.ts
 encoder.ts
 git_push.sh
 index.ts
+model/adminUserListItemDto.ts
+model/adminUserListItemDtoApiResponse.ts
+model/adminUserListItemDtoIReadOnlyListApiResponse.ts
 model/apiError.ts
 model/assignRoleDto.ts
 model/authResultDto.ts
@@ -31,8 +35,10 @@ model/registerDto.ts
 model/setCourseEnrollmentStatusDto.ts
 model/setModuleEnrollmentStatusDto.ts
 model/setUserStatusDto.ts
+model/staffMiniDto.ts
 model/studentDashboardDto.ts
 model/studentDashboardDtoApiResponse.ts
+model/studentMiniDto.ts
 model/systemRole.ts
 model/userDetailDto.ts
 model/userDetailDtoApiResponse.ts

@@ -3,7 +3,8 @@ import {MatIconModule} from '@angular/material/icon';
 import {Router} from '@angular/router';
 import {AppAuthService} from '../../api/auth/app-auth.service';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {finalize} from 'rxjs/operators'
+import {finalize, switchMap} from 'rxjs/operators'
+import {UserService} from '../../services/user.service';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +17,7 @@ export class Login {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly auth = inject(AppAuthService);
+  private readonly userService = inject(UserService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   activeTab: 'login' | 'register' = 'login';
@@ -45,12 +47,21 @@ export class Login {
 
     this.auth
       .login(email, password, rememberMe)
-      .pipe(finalize(() => {
-        this.isSubmitting = false;
-        this.cdr.markForCheck();
-      }))
+      .pipe(
+        switchMap(() => this.userService.loadCurrentUser()),
+        finalize(() => {
+          this.isSubmitting = false;
+          this.cdr.markForCheck();
+        })
+      )
       .subscribe({
-        next: () => void this.router.navigateByUrl('/dashboard'),
+        next: (user) => {
+          if (user.roles?.includes(3)) {
+            void this.router.navigateByUrl('/admin');
+          } else {
+            void this.router.navigateByUrl('/dashboard');
+          }
+        },
         error: (err) => {
           if (err?.status === 401) this.errorMessage = 'Invalid email or password.';
           else this.errorMessage = 'Login failed. Please try again.';

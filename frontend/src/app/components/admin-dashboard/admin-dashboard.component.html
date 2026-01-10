@@ -1,0 +1,344 @@
+<div class="admin-dashboard">
+  <app-navbar
+    [title]="'Admin Dashboard'"
+    [subTitle]="'System Administration'"
+    [links]="[
+      { label: 'Dashboard', path: '/admin', icon: 'dashboard' },
+      { label: 'Users', path: '/admin', icon: 'people' }
+    ]">
+  </app-navbar>
+
+  <div class="admin-container">
+    <aside class="sidebar">
+      <h3>Settings</h3>
+      <nav class="sidebar-nav">
+        <button
+          class="sidebar-item"
+          [class.sidebar-item--active]="currentView() === 'users'"
+          (click)="setView('users')">
+          <mat-icon fontIcon="people"></mat-icon>
+          <span>Users</span>
+        </button>
+        <button
+          class="sidebar-item"
+          [class.sidebar-item--active]="currentView() === 'courses'"
+          (click)="setView('courses')">
+          <mat-icon fontIcon="school"></mat-icon>
+          <span>Courses</span>
+        </button>
+        <button
+          class="sidebar-item"
+          [class.sidebar-item--active]="currentView() === 'modules'"
+          (click)="setView('modules')">
+          <mat-icon fontIcon="menu_book"></mat-icon>
+          <span>Modules</span>
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <button
+          class="sidebar-item"
+          [class.sidebar-item--active]="currentView() === 'enroll-course'"
+          (click)="setView('enroll-course')">
+          <mat-icon fontIcon="person_add"></mat-icon>
+          <span>Enroll in Course</span>
+        </button>
+        <button
+          class="sidebar-item"
+          [class.sidebar-item--active]="currentView() === 'enroll-module'"
+          (click)="setView('enroll-module')">
+          <mat-icon fontIcon="playlist_add"></mat-icon>
+          <span>Enroll in Module</span>
+        </button>
+      </nav>
+    </aside>
+
+    <main class="content">
+      @if (isLoading()) {
+        <div class="loading">
+          <p>Loading...</p>
+        </div>
+      } @else {
+        @if (currentView() === 'users') {
+          <div class="view-container">
+            <h2>Users Management</h2>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Roles</th>
+                    <th>Status</th>
+                    <th>Permissions</th>
+                    <th>Last Login</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (user of users(); track user.id) {
+                    <tr (contextmenu)="openContextMenu($event, user.id!)">
+                      <td class="cell-id">{{ user.id || 'N/A' }}</td>
+                      <td>{{ user.email || 'No email' }}</td>
+                      <td>
+                        <span class="badge">{{ getRoleName(user.permissions) }}</span>
+                      </td>
+                      <td>
+                        <span class="status" [class.status--active]="user.isActive" [class.status--inactive]="!user.isActive">
+                          {{ user.isActive ? 'Active' : 'Inactive' }}
+                        </span>
+                      </td>
+                      <td>{{ user.permissions ?? 0 }}</td>
+                      <td>{{ formatDate(user.lastLoginAt) }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="no-data">No users found</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @if (currentView() === 'courses') {
+          <div class="view-container">
+            <h2>Courses Management</h2>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Code</th>
+                    <th>Title</th>
+                    <th>Academic Year</th>
+                    <th>Year of Study</th>
+                    <th>Semester</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (course of courses(); track course.courseId) {
+                    <tr>
+                      <td class="cell-id">{{ course.courseId }}</td>
+                      <td>{{ course.courseCode }}</td>
+                      <td>{{ course.title }}</td>
+                      <td>{{ course.academicYear }}</td>
+                      <td>{{ course.yearOfStudy }}</td>
+                      <td>{{ course.semester }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="no-data">No courses found</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @if (currentView() === 'modules') {
+          <div class="view-container">
+            <h2>Modules Management</h2>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Code</th>
+                    <th>Title</th>
+                    <th>Academic Year</th>
+                    <th>Year of Study</th>
+                    <th>Semester</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (module of modules(); track module.moduleId) {
+                    <tr>
+                      <td class="cell-id">{{ module.moduleId }}</td>
+                      <td>{{ module.moduleCode }}</td>
+                      <td>{{ module.title }}</td>
+                      <td>{{ module.academicYear }}</td>
+                      <td>{{ module.yearOfStudy }}</td>
+                      <td>{{ module.semester }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="no-data">No modules found</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @if (currentView() === 'enroll-course') {
+          <div class="view-container">
+            <h2>Enroll Student in Course</h2>
+            <div class="form-container">
+              <div class="form-group">
+                <label for="user-select">Select Student</label>
+                <select id="user-select" [(ngModel)]="selectedUserId" class="form-control">
+                  <option value="">-- Select Student --</option>
+                  @for (user of users(); track user.id) {
+                    <option [value]="user.id">{{ user.email }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="course-select">Select Course</label>
+                @if (courses().length > 0) {
+                  <select id="course-select" [(ngModel)]="selectedCourseId" class="form-control">
+                    <option value="">-- Select Course --</option>
+                    @for (course of courses(); track course.courseId) {
+                      <option [value]="course.courseId">{{ course.title }} ({{ course.courseCode }})</option>
+                    }
+                  </select>
+                } @else {
+                  <div class="empty-state-message">
+                    <mat-icon fontIcon="info"></mat-icon>
+                    <p>No courses available. Please add courses first.</p>
+                  </div>
+                }
+              </div>
+
+              <button class="btn-primary" (click)="enrollInCourse()" [disabled]="courses().length === 0">
+                Enroll in Course
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (currentView() === 'enroll-module') {
+          <div class="view-container">
+            <h2>Enroll Student in Module</h2>
+            <div class="form-container">
+              <div class="form-group">
+                <label for="user-module-select">Select Student</label>
+                <select id="user-module-select" [(ngModel)]="selectedUserId" class="form-control">
+                  <option value="">-- Select Student --</option>
+                  @for (user of users(); track user.id) {
+                    <option [value]="user.id">{{ user.email }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="module-select">Select Module</label>
+                @if (modules().length > 0) {
+                  <select id="module-select" [(ngModel)]="selectedModuleId" class="form-control">
+                    <option value="">-- Select Module --</option>
+                    @for (module of modules(); track module.moduleId) {
+                      <option [value]="module.moduleId">{{ module.title }} ({{ module.moduleCode }})</option>
+                    }
+                  </select>
+                } @else {
+                  <div class="empty-state-message">
+                    <mat-icon fontIcon="info"></mat-icon>
+                    <p>No modules available. Please add modules first.</p>
+                  </div>
+                }
+              </div>
+
+              <button class="btn-primary" (click)="enrollInModule()" [disabled]="modules().length === 0">
+                Enroll in Module
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </main>
+  </div>
+
+  @if (showUserDetails()) {
+    <div class="modal-overlay" (click)="closeUserDetails()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>User Details</h3>
+          <button class="modal-close" (click)="closeUserDetails()">
+            <mat-icon fontIcon="close"></mat-icon>
+          </button>
+        </div>
+        <div class="modal-body">
+          @for (user of users(); track user.id) {
+            @if (user.id === showUserDetails()) {
+              <div class="detail-row">
+                <span class="detail-label">User ID:</span>
+                <span class="detail-value">{{ user.id }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">{{ user.email }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Roles:</span>
+                <span class="detail-value">{{ getRoleName(user.permissions) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value">
+                  <span class="status" [class.status--active]="user.isActive" [class.status--inactive]="!user.isActive">
+                    {{ user.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Permissions:</span>
+                <span class="detail-value">{{ user.permissions }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Last Login:</span>
+                <span class="detail-value">{{ formatDate(user.lastLoginAt) }}</span>
+              </div>
+
+              <div class="modal-actions">
+                <button class="btn-secondary" (click)="impersonateUser(user.id!)">
+                  <mat-icon fontIcon="person"></mat-icon>
+                  Impersonate User
+                </button>
+                <button class="btn-warning" (click)="assignRole(user.id!, 1)">
+                  <mat-icon fontIcon="admin_panel_settings"></mat-icon>
+                  Assign Role
+                </button>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (contextMenuUserId() && contextMenuPosition(); as pos) {
+    <div class="context-menu" [style.left.px]="pos.x" [style.top.px]="pos.y">
+      <button class="context-menu-item" (click)="handleViewDetails()">
+        <mat-icon fontIcon="visibility"></mat-icon>
+        <span>View Details</span>
+      </button>
+      <button class="context-menu-item" (click)="handleResetPassword()">
+        <mat-icon fontIcon="lock_reset"></mat-icon>
+        <span>Reset Password</span>
+      </button>
+      <button class="context-menu-item" (click)="handleToggleStatus()">
+        <mat-icon [fontIcon]="getContextMenuUser()?.isActive ? 'block' : 'check_circle'"></mat-icon>
+        <span>{{ getContextMenuUser()?.isActive ? 'Deactivate' : 'Activate' }}</span>
+      </button>
+      <div class="context-menu-divider"></div>
+      <button class="context-menu-item" (click)="handleAssignRole()">
+        <mat-icon fontIcon="admin_panel_settings"></mat-icon>
+        <span>Assign Role</span>
+      </button>
+      <button class="context-menu-item" (click)="handleImpersonate()">
+        <mat-icon fontIcon="person"></mat-icon>
+        <span>Impersonate User</span>
+      </button>
+      <div class="context-menu-divider"></div>
+      <button class="context-menu-item context-menu-item--danger" (click)="handleDeleteUser()">
+        <mat-icon fontIcon="delete"></mat-icon>
+        <span>Delete User</span>
+      </button>
+    </div>
+  }
+</div>
+

@@ -1,12 +1,13 @@
 import {Component, signal} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
+import {SnackbarComponent} from './components/snackbar/snackbar.component';
 
 @Component({
   selector: 'app-root',
-  // imports: [RouterOutlet],
   templateUrl: './app.html',
   imports: [
-    RouterOutlet
+    RouterOutlet,
+    SnackbarComponent
   ],
   styleUrl: './app.scss'
 })

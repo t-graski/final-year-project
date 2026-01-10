@@ -1,0 +1,521 @@
+@use 'styles' as *;
+
+.admin-dashboard {
+  min-height: 100vh;
+  background-color: $neutral-200;
+}
+
+.admin-container {
+  display: flex;
+  min-height: calc(100vh - 80px);
+}
+
+.sidebar {
+  width: 250px;
+  background-color: $neutral-100;
+  padding: 24px 0;
+  border-right: 1px solid $neutral-300;
+
+  h3 {
+    padding: 0 20px;
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: $neutral-600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: $neutral-700;
+  font-size: 15px;
+  text-align: left;
+
+  mat-icon {
+    color: $neutral-500;
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+
+  &:hover {
+    background-color: $neutral-200;
+  }
+
+  &--active {
+    background-color: $brand-100;
+    color: $brand-500;
+    font-weight: 500;
+
+    mat-icon {
+      color: $brand-400;
+    }
+  }
+}
+
+.sidebar-divider {
+  height: 1px;
+  background-color: $neutral-300;
+  margin: 12px 20px;
+}
+
+.content {
+  flex: 1;
+  padding: 24px;
+}
+
+.view-container {
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: $neutral-700;
+    margin: 0 0 24px 0;
+  }
+}
+
+.table-wrapper {
+  background-color: $neutral-100;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background-color: $brand-400;
+    color: $neutral-100;
+
+    th {
+      padding: 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid $neutral-300;
+      transition: background-color 0.15s;
+
+      &:hover {
+        background-color: $neutral-200;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: 16px;
+      color: $neutral-700;
+      font-size: 14px;
+
+      &.cell-id {
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: $neutral-500;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &.no-data {
+        text-align: center;
+        color: $neutral-500;
+        padding: 32px;
+      }
+    }
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: $brand-100;
+  color: $brand-500;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &--active {
+    background-color: $success-100;
+    color: $success-300;
+  }
+
+  &--inactive {
+    background-color: $error-100;
+    color: $error-200;
+  }
+}
+
+.form-container {
+  background-color: $neutral-100;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  max-width: 600px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: $neutral-700;
+    margin-bottom: 8px;
+  }
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid $neutral-300;
+  border-radius: 8px;
+  font-size: 14px;
+  color: $neutral-700;
+  background-color: $neutral-100;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: $brand-400;
+  }
+}
+
+.btn-primary {
+  padding: 12px 24px;
+  background-color: $brand-400;
+  color: $neutral-100;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: $brand-500;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    background-color: $neutral-400;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.empty-state-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: $neutral-200;
+  border: 1px solid $neutral-300;
+  border-radius: 8px;
+  color: $neutral-600;
+
+  mat-icon {
+    color: $neutral-500;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px;
+
+  p {
+    font-size: 16px;
+    color: $neutral-600;
+  }
+}
+
+.context-menu {
+  position: fixed;
+  background-color: $neutral-100;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: 8px 0;
+  min-width: 220px;
+  z-index: 10000;
+  animation: contextMenuFadeIn 0.15s ease-out;
+}
+
+.context-menu-item {
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: $neutral-700;
+  font-size: 14px;
+  text-align: left;
+  transition: background-color 0.15s;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: $neutral-600;
+  }
+
+  &:hover {
+    background-color: $neutral-200;
+  }
+
+  &--danger {
+    color: $error-200;
+
+    mat-icon {
+      color: $error-200;
+    }
+
+    &:hover {
+      background-color: $error-100;
+    }
+  }
+}
+
+.context-menu-divider {
+  height: 1px;
+  background-color: $neutral-300;
+  margin: 8px 0;
+}
+
+.data-table tbody tr {
+  cursor: context-menu;
+  user-select: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background-color: $neutral-100;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid $neutral-300;
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: $neutral-700;
+  }
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $neutral-500;
+  transition: all 0.2s;
+  border-radius: 6px;
+
+  &:hover {
+    background-color: $neutral-200;
+    color: $neutral-700;
+  }
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid $neutral-300;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.detail-label {
+  font-weight: 600;
+  color: $neutral-600;
+  font-size: 14px;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: $neutral-700;
+  text-align: right;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid $neutral-300;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 12px 20px;
+  background-color: $neutral-300;
+  color: $neutral-700;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background-color: $neutral-400;
+  }
+}
+
+.btn-warning {
+  flex: 1;
+  padding: 12px 20px;
+  background-color: #f59e0b;
+  color: $neutral-100;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background-color: darken(#f59e0b, 10%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

@@ -12,6 +12,8 @@
 export interface AuthResultDto { 
     userId?: string;
     email?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
     permissions?: number;
     accessToken?: string | null;
 }
