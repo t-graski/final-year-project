@@ -5,6 +5,8 @@ namespace backend.dtos;
 public record UserSummaryDto(
     Guid Id,
     string Email,
+    string FirstName,
+    string LastName,
     bool IsActive,
     long Permissions,
     DateTimeOffset? LastLoginAt
@@ -12,6 +14,8 @@ public record UserSummaryDto(
 
 public record UserDetailDto(
     Guid Id,
+    string FirstName,
+    string LastName,
     string Email,
     bool IsActive,
     long Permissions,

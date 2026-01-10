@@ -39,6 +39,12 @@
   border-radius: 9999px;
   width: 64px;
   height: 64px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: $brand-500;
+  }
 }
 
 .icon mat-icon {
@@ -50,6 +56,118 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.navbar-profile-wrapper {
+  position: relative;
+}
+
+.navbar-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background-color: $neutral-200;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: $neutral-300;
+  }
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: $brand-400;
+  }
+
+  .dropdown-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: $neutral-600;
+  }
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: $neutral-800;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.profile-email {
+  font-size: 12px;
+  color: $neutral-600;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: $neutral-100;
+  border: 1px solid $neutral-300;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1000;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+.dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: $neutral-700;
+  font-size: 14px;
+  text-align: left;
+  transition: background-color 0.15s;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: $neutral-600;
+  }
+
+  &:hover {
+    background-color: $neutral-200;
+  }
+
+  &:first-child {
+    border-radius: 8px 8px 0 0;
+  }
+
+  &:last-child {
+    border-radius: 0 0 8px 8px;
+  }
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .navbar-link {

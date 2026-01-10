@@ -89,4 +89,13 @@ export class StudentDashboardComponent implements OnInit {
   onModuleClick(module: ModuleCardDto): void {
     console.log('Module clicked:', module);
   }
+
+  getCurrentUserName(): string {
+    return this.studentName();
+  }
+
+  getCurrentUserEmail(): string {
+    const user = this.userService.getCurrentUser();
+    return user?.email || '';
+  }
 }

@@ -5,7 +5,12 @@ namespace backend.services.interfaces;
 public interface IAdminUserService
 {
     Task<IReadOnlyList<AdminUserListItemDto>> ListAsync(string? q, int limit = 50, int offset = 0);
-    Task<AdminUserListItemDto> GetAsync(Guid userId);
+    Task<AdminUserDetailDto> GetAsync(Guid userId);
+
+    Task<AdminUserDetailDto> CreateAsync(AdminCreateUserDto dto);
+    Task<AdminUserDetailDto> UpdateAsync(Guid userId, AdminUpdateUserDto dto);
+    Task SetActiveAsync(Guid userId, bool isActive);
 
     Task DeleteAsync(Guid userId);
+    Task RecomputePermissionsAsync(Guid userId);
 }

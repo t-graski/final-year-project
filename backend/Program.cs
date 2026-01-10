@@ -89,6 +89,10 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
+builder.Services.AddScoped<IAdminUserService, AdminUserService>();
+builder.Services.AddScoped<IAdminCatalogService, AdminCatalogService>();
+builder.Services.AddScoped<IAdminEnrollmentService, AdminEnrollmentService>();
+builder.Services.AddScoped<IEnrollmentQueryService, EnrollmentQueryService>();
 
 builder.Services.AddHttpContextAccessor();
 

@@ -104,6 +104,8 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
             .Select(u => new UserSummaryDto(
                 u.Id,
                 u.Email,
+                u.FirstName,
+                u.LastName,
                 u.IsActive,
                 u.Permissions,
                 u.LastLoginAtUtc
@@ -121,6 +123,8 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
             {
                 u.Id,
                 u.Email,
+                u.FirstName,
+                u.LastName,
                 u.IsActive,
                 u.Permissions,
                 u.CreatedAtUtc,
@@ -137,6 +141,8 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         return new UserDetailDto(
             user.Id,
             user.Email,
+            user.FirstName,
+            user.LastName,
             user.IsActive,
             user.Permissions,
             user.CreatedAtUtc,
@@ -368,7 +374,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         return best;
     }
 
-    private static Permission ComputePermissionsFromRoles(User user)
+    public static Permission ComputePermissionsFromRoles(User user)
     {
         var perms = Permission.None;
 

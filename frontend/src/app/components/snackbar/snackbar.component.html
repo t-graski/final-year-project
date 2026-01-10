@@ -1,6 +1,6 @@
 <div class="snackbar-container">
   @for (message of messages$ | async; track message.id) {
-    <div class="snackbar" [ngClass]="getSnackbarClass(message.statusCode)" [class.removing]="isRemoving(message.id)">
+    <div class="snackbar" [ngClass]="getSnackbarClass(message.statusCode)" [class.removing]="message.removing">
       <div class="snackbar-icon">
         <mat-icon [fontIcon]="getIcon(message.statusCode)"></mat-icon>
       </div>

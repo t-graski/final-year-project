@@ -1,18 +1,16 @@
-﻿using System.Runtime.InteropServices.ComTypes;
-using backend.data;
+﻿using backend.data;
 using backend.dtos;
 using backend.errors;
 using backend.models;
 using backend.models.enums;
 using backend.services.interfaces;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.Internal;
 
 namespace backend.services.implementations;
 
 public class EnrollmentService(AppDbContext db) : IEnrollmentService
 {
-    public async Task<CourseEnrollmentDto> EnrolStudentInCourseAsync(Guid studentId, EnrollInCourseDto dto)
+    public async Task<CourseEnrollmentDto> EnrollStudentInCourseAsync(Guid studentId, EnrollInCourseDto dto)
     {
         var studentExists = await db.Students.AnyAsync(s => s.Id == studentId);
         if (!studentExists)
@@ -27,7 +25,7 @@ public class EnrollmentService(AppDbContext db) : IEnrollmentService
         }
 
         var active = await db.StudentCourseEnrollments
-            .Where(x => x.StudentId == studentId && !x.IsDeleted && x.Status == CourseEnrollmentStatus.Active)
+            .Where(x => x.StudentId == studentId && !x.IsDeleted && !x.Course.IsDeleted && x.Status == CourseEnrollmentStatus.Active)
             .FirstOrDefaultAsync();
 
         if (active is not null)
@@ -115,7 +113,7 @@ public class EnrollmentService(AppDbContext db) : IEnrollmentService
         }
 
         var activeCourse = await db.StudentCourseEnrollments
-            .Where(x => x.StudentId == studentId && !x.IsDeleted && x.Status == CourseEnrollmentStatus.Active)
+            .Where(x => x.StudentId == studentId && !x.IsDeleted && !x.Course.IsDeleted && x.Status == CourseEnrollmentStatus.Active)
             .Select(x => new { x.CourseId, x.AcademicYear, x.YearOfStudy, x.Semester })
             .FirstOrDefaultAsync();
 
@@ -214,7 +212,7 @@ public class EnrollmentService(AppDbContext db) : IEnrollmentService
         var enrolledCourse = await GetActiveCourseEnrollmentDto(studentId);
 
         var current = await db.StudentModuleEnrollments.AsNoTracking()
-            .Where(x => x.StudentId == studentId && !x.IsDeleted && x.Status == ModuleEnrollmentStatus.Enrolled)
+            .Where(x => x.StudentId == studentId && !x.IsDeleted && !x.Module.IsDeleted && x.Status == ModuleEnrollmentStatus.Enrolled)
             .OrderByDescending(x => x.AcademicYear)
             .ThenByDescending(x => x.Semester)
             .Select(x => new ModuleCardDto(
@@ -229,7 +227,7 @@ public class EnrollmentService(AppDbContext db) : IEnrollmentService
             .ToListAsync();
 
         var past = await db.StudentModuleEnrollments.AsNoTracking()
-            .Where(x => x.StudentId == studentId && !x.IsDeleted &&
+            .Where(x => x.StudentId == studentId && !x.IsDeleted && !x.Module.IsDeleted &&
                         (x.Status == ModuleEnrollmentStatus.Completed || x.Status == ModuleEnrollmentStatus.Withdrawn ||
                          x.Status == ModuleEnrollmentStatus.Failed))
             .OrderByDescending(x => x.AcademicYear)
@@ -251,7 +249,7 @@ public class EnrollmentService(AppDbContext db) : IEnrollmentService
     private async Task<CourseEnrollmentDto?> GetActiveCourseEnrollmentDto(Guid studentId)
     {
         return await db.StudentCourseEnrollments.AsNoTracking()
-            .Where(x => x.StudentId == studentId && !x.IsDeleted && x.Status == CourseEnrollmentStatus.Active)
+            .Where(x => x.StudentId == studentId && !x.IsDeleted && !x.Course.IsDeleted && x.Status == CourseEnrollmentStatus.Active)
             .OrderByDescending(x => x.AcademicYear)
             .ThenByDescending(x => x.Semester)
             .Select(x => new CourseEnrollmentDto(
@@ -269,7 +267,7 @@ public class EnrollmentService(AppDbContext db) : IEnrollmentService
     private async Task<ModuleCardDto> GetModuleEnrollmentDto(Guid enrollmentId)
     {
         var dto = await db.StudentModuleEnrollments.AsNoTracking()
-            .Where(x => x.Id == enrollmentId && !x.IsDeleted)
+            .Where(x => x.Id == enrollmentId && !x.IsDeleted && !x.Module.IsDeleted)
             .Select(x => new ModuleCardDto(
                 x.ModuleId,
                 x.Module.ModuleCode,

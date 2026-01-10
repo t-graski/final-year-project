@@ -1,0 +1,211 @@
+import {Component, Input, Output, EventEmitter, signal, computed} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MatIconModule} from '@angular/material/icon';
+import {FormsModule} from '@angular/forms';
+
+export interface TableColumn<T = any> {
+  key: string;
+  label: string;
+  sortable?: boolean;
+  visible?: boolean;
+  render?: (item: T) => string;
+  cellClass?: string;
+}
+
+export interface TableAction<T = any> {
+  icon: string;
+  label: string;
+  handler: (item: T) => void;
+  danger?: boolean;
+  divider?: boolean;
+}
+
+@Component({
+  selector: 'app-dynamic-table',
+  standalone: true,
+  imports: [CommonModule, MatIconModule, FormsModule],
+  templateUrl: './dynamic-table.component.html',
+  styleUrl: './dynamic-table.component.scss'
+})
+export class DynamicTableComponent<T extends Record<string, any>> {
+  @Input() data: T[] = [];
+  @Input()
+  set columns(value: TableColumn<T>[]) {
+    this._columns.set(value);
+  }
+  get columns(): TableColumn<T>[] {
+    return this._columns();
+  }
+
+  private _columns = signal<TableColumn<T>[]>([]);
+
+  @Input() actions: TableAction<T>[] = [];
+  @Input() searchPlaceholder = 'Search...';
+  @Input() emptyMessage = 'No data found';
+  @Input() loading = false;
+
+  @Output() contextMenuAction = new EventEmitter<{action: TableAction<T>, item: T}>();
+  @Output() reload = new EventEmitter<void>();
+
+  searchQuery = signal('');
+  sortField = signal<string | null>(null);
+  sortDirection = signal<'asc' | 'desc'>('asc');
+  showColumnSelector = signal(false);
+
+  contextMenuPosition = signal<{x: number, y: number} | null>(null);
+  contextMenuItem = signal<T | null>(null);
+
+  showDeleteConfirmation = signal(false);
+  deleteConfirmationMessage = signal('');
+  pendingDeleteAction: (() => void) | null = null;
+
+  visibleColumns = computed(() =>
+    this._columns().filter(col => col.visible !== false)
+  );
+
+  filteredData = computed(() => {
+    let filtered = this.data;
+    const query = this.searchQuery().toLowerCase();
+
+    if (query) {
+      filtered = filtered.filter(item => {
+        return this.visibleColumns().some(col => {
+          const value = item[col.key];
+          if (value == null) return false;
+          return String(value).toLowerCase().includes(query);
+        });
+      });
+    }
+
+    return this.sortData(filtered);
+  });
+
+  sortData(data: T[]): T[] {
+    const field = this.sortField();
+    if (!field) return data;
+
+    const direction = this.sortDirection();
+    const sorted = [...data];
+
+    sorted.sort((a, b) => {
+      const aVal = a[field];
+      const bVal = b[field];
+
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+
+      const aStr = String(aVal).toLowerCase();
+      const bStr = String(bVal).toLowerCase();
+
+      if (aStr < bStr) return direction === 'asc' ? -1 : 1;
+      if (aStr > bStr) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }
+
+  toggleSort(column: TableColumn<T>): void {
+    if (!column.sortable) return;
+
+    if (this.sortField() === column.key) {
+      this.sortDirection.update(dir => dir === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortField.set(column.key);
+      this.sortDirection.set('asc');
+    }
+  }
+
+  getSortIcon(column: TableColumn<T>): string {
+    if (!column.sortable) return '';
+    if (this.sortField() !== column.key) return 'unfold_more';
+    return this.sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward';
+  }
+
+  toggleColumn(column: TableColumn<T>): void {
+    column.visible = !column.visible;
+    this._columns.set([...this._columns()]);
+  }
+
+  applyColumnChanges(): void {
+    this.closeColumnSelector();
+  }
+
+  toggleColumnSelector(): void {
+    this.showColumnSelector.update(v => !v);
+  }
+
+  closeColumnSelector(): void {
+    this.showColumnSelector.set(false);
+  }
+
+  getCellValue(item: T, column: TableColumn<T>): string {
+    if (column.render) {
+      return column.render(item);
+    }
+    const value = item[column.key];
+    return value != null ? String(value) : '-';
+  }
+
+  openContextMenu(event: MouseEvent, item: T): void {
+    if (this.actions.length === 0) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    this.contextMenuItem.set(item);
+    this.contextMenuPosition.set({x: event.clientX, y: event.clientY});
+  }
+
+  closeContextMenu(): void {
+    this.contextMenuItem.set(null);
+    this.contextMenuPosition.set(null);
+  }
+
+  handleAction(action: TableAction<T>): void {
+    const item = this.contextMenuItem();
+    if (item) {
+      this.closeContextMenu();
+
+      if (action.danger) {
+        this.deleteConfirmationMessage.set(`Are you sure you want to delete this item?`);
+        this.showDeleteConfirmation.set(true);
+        this.pendingDeleteAction = () => {
+          action.handler(item);
+          this.contextMenuAction.emit({action, item});
+        };
+      } else {
+        this.contextMenuAction.emit({action, item});
+        action.handler(item);
+      }
+    }
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteAction) {
+      this.pendingDeleteAction();
+      this.pendingDeleteAction = null;
+    }
+    this.showDeleteConfirmation.set(false);
+  }
+
+  cancelDelete(): void {
+    this.pendingDeleteAction = null;
+    this.showDeleteConfirmation.set(false);
+  }
+
+  onReload(): void {
+    this.reload.emit();
+  }
+
+  getVisibleColumnCount(): number {
+    return this.visibleColumns().length;
+  }
+
+  getEmptyMessage(): string {
+    return this.searchQuery()
+      ? `No results found for "${this.searchQuery()}"`
+      : this.emptyMessage;
+  }
+}
+

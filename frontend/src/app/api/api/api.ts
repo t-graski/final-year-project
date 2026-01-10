@@ -1,11 +1,17 @@
+export * from './adminCatalog.service';
+import { AdminCatalogService } from './adminCatalog.service';
+export * from './adminEnrollment.service';
+import { AdminEnrollmentService } from './adminEnrollment.service';
 export * from './adminUser.service';
 import { AdminUserService } from './adminUser.service';
 export * from './auth.service';
 import { AuthService } from './auth.service';
+export * from './enrollmentQueries.service';
+import { EnrollmentQueriesService } from './enrollmentQueries.service';
 export * from './enrollments.service';
 import { EnrollmentsService } from './enrollments.service';
 export * from './me.service';
 import { MeService } from './me.service';
 export * from './user.service';
 import { UserService } from './user.service';
-export const APIS = [AdminUserService, AuthService, EnrollmentsService, MeService, UserService];
+export const APIS = [AdminCatalogService, AdminEnrollmentService, AdminUserService, AuthService, EnrollmentQueriesService, EnrollmentsService, MeService, UserService];

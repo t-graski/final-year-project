@@ -3,6 +3,8 @@
     <app-navbar
       [title]="'Student Dashboard'"
       [subTitle]="'Welcome back, ' + studentName()"
+      [userName]="getCurrentUserName()"
+      [userEmail]="getCurrentUserEmail()"
       [links]="[
         { label: 'Dashboard', path: '/dashboard', icon: 'home' },
         { label: 'My Courses', path: '/dashboard', icon: 'school' },

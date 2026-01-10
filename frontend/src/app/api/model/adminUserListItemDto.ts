@@ -21,7 +21,5 @@ export interface AdminUserListItemDto {
     roles?: Array<number> | null;
     student?: StudentMiniDto;
     staff?: StaffMiniDto;
-    createdAtUtc?: string;
-    lastLoginAtUtc?: string | null;
 }
 

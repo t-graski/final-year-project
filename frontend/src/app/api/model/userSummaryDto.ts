@@ -12,6 +12,8 @@
 export interface UserSummaryDto { 
     id?: string;
     email?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
     isActive?: boolean;
     permissions?: number;
     lastLoginAt?: string | null;

@@ -12,6 +12,8 @@ import { SystemRole } from './systemRole';
 
 export interface UserDetailDto { 
     id?: string;
+    firstName?: string | null;
+    lastName?: string | null;
     email?: string | null;
     isActive?: boolean;
     permissions?: number;

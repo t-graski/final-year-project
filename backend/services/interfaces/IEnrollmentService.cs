@@ -5,7 +5,7 @@ namespace backend.services.interfaces;
 
 public interface IEnrollmentService
 {
-    Task<CourseEnrollmentDto> EnrolStudentInCourseAsync(Guid studentId, EnrollInCourseDto dto);
+    Task<CourseEnrollmentDto> EnrollStudentInCourseAsync(Guid studentId, EnrollInCourseDto dto);
     Task<CourseEnrollmentDto> SetCourseEnrollmentStatusAsync(Guid studentId, CourseEnrollmentStatus status);
 
     Task<ModuleCardDto> EnrollStudentInModuleAsync(Guid studentId, Guid moduleId, EnrollInModuleDto dto);

@@ -84,7 +84,159 @@
     font-size: 24px;
     font-weight: 600;
     color: $neutral-700;
-    margin: 0 0 24px 0;
+    margin: 0;
+  }
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background-color: $neutral-100;
+  border: 1px solid $neutral-300;
+  border-radius: 8px;
+
+  mat-icon {
+    color: $neutral-600;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: $neutral-800;
+  outline: none;
+
+  &::placeholder {
+    color: $neutral-500;
+  }
+}
+
+.view-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.action-btn-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: $neutral-100;
+  border: 1px solid $neutral-300;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $neutral-700;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background-color: $neutral-200;
+    border-color: $neutral-400;
+  }
+
+  &--primary {
+    background-color: $brand-400;
+    border-color: $brand-400;
+    color: $neutral-100;
+
+    &:hover {
+      background-color: $brand-500;
+      border-color: $brand-500;
+    }
+  }
+
+  &:disabled {
+    background-color: $neutral-300;
+    color: $neutral-500;
+    cursor: not-allowed;
+    opacity: 0.6;
+
+    &:hover {
+      background-color: $neutral-300;
+      border-color: $neutral-300;
+    }
+  }
+}
+
+.action-btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &--danger {
+    color: $error-200;
+
+    &:hover {
+      background-color: $error-100;
+    }
+  }
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.form-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: $neutral-700;
+    white-space: nowrap;
+  }
+}
+
+.form-control-inline {
+  padding: 8px 12px;
+  border: 1px solid $neutral-300;
+  border-radius: 8px;
+  font-size: 14px;
+  color: $neutral-700;
+  background-color: $neutral-100;
+  min-width: 200px;
+
+  &:focus {
+    outline: none;
+    border-color: $brand-400;
   }
 }
 
@@ -110,6 +262,28 @@
       font-size: 14px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      position: relative;
+
+      &.sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.15s;
+        padding-right: 40px;
+
+        &:hover {
+          background-color: $brand-500;
+        }
+
+        mat-icon {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
     }
   }
 
@@ -224,6 +398,16 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 
   &:hover:not(:disabled) {
     background-color: $brand-500;
@@ -332,7 +516,6 @@
 
 .data-table tbody tr {
   cursor: context-menu;
-  user-select: none;
 }
 
 .modal-overlay {
@@ -406,6 +589,7 @@
 .detail-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 16px 0;
   border-bottom: 1px solid $neutral-300;
 
@@ -424,6 +608,41 @@
   font-size: 14px;
   color: $neutral-700;
   text-align: right;
+}
+
+.detail-value-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-btn {
+  background: transparent;
+  border: 1px solid $neutral-300;
+  border-radius: 6px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: $neutral-600;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background-color: $brand-100;
+    border-color: $brand-400;
+    color: $brand-500;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .modal-actions {
@@ -516,6 +735,251 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+.column-selector {
+  position: relative;
+
+  &:hover .column-dropdown {
+    display: block;
+  }
+}
+
+.column-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background-color: $neutral-100;
+  border: 1px solid $neutral-300;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  padding: 8px;
+  z-index: 1000;
+}
+
+.column-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+  user-select: none;
+
+  &:hover {
+    background-color: $neutral-200;
+  }
+
+  input[type="checkbox"] {
+    cursor: pointer;
+  }
+
+  span {
+    font-size: 14px;
+    color: $neutral-700;
+  }
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+  }
+
+  span {
+    font-size: 14px;
+    color: $neutral-700;
+  }
+}
+
+.cell-description {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+textarea.form-control {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.enrollment-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.enrollment-section {
+  background-color: $neutral-100;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: $neutral-800;
+  }
+}
+
+.student-list, .course-list, .module-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid $neutral-300;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.student-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid $neutral-300;
+  transition: background-color 0.15s;
+  user-select: none;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: $neutral-200;
+  }
+
+  &--selected {
+    background-color: $brand-100;
+
+    &:hover {
+      background-color: darken($brand-100, 5%);
+    }
+  }
+
+  input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.student-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.student-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: $neutral-800;
+}
+
+.student-email {
+  font-size: 12px;
+  color: $neutral-600;
+}
+
+.course-item, .module-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid $neutral-300;
+  transition: background-color 0.15s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: $neutral-200;
+  }
+
+  &--selected {
+    background-color: $brand-100;
+    border-left: 4px solid $brand-400;
+
+    &:hover {
+      background-color: darken($brand-100, 5%);
+    }
+  }
+}
+
+.course-code, .module-code {
+  font-size: 12px;
+  font-weight: 600;
+  color: $brand-400;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.course-title, .module-title {
+  font-size: 14px;
+  color: $neutral-800;
+}
+
+.selection-summary {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: $brand-100;
+  color: $brand-400;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.enrollment-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn-large {
+  padding: 14px 32px;
+  font-size: 16px;
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: $neutral-500;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    font-style: italic;
   }
 }
 

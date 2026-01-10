@@ -22,9 +22,36 @@ public class AdminUserController(IAdminUserService users) : ControllerBase
     [HttpGet("{userId:guid}")]
     [Authorize]
     [RequirePermission(Permission.ManageUsers)]
-    [ProducesResponseType(typeof(ApiResponse<AdminUserListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<AdminUserDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(Guid userId)
-        => Ok(ApiResponse<AdminUserListItemDto>.Ok(await users.GetAsync(userId)));
+        => Ok(ApiResponse<AdminUserDetailDto>.Ok(await users.GetAsync(userId)));
+
+    [HttpPost]
+    [Authorize]
+    [RequirePermission(Permission.ManageUsers)]
+    [ProducesResponseType(typeof(ApiResponse<AdminUserDetailDto>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> Create(AdminCreateUserDto dto)
+    {
+        var created = await users.CreateAsync(dto);
+        return StatusCode(201, ApiResponse<AdminUserDetailDto>.Ok(created, 201));
+    }
+
+    [HttpPut("{id:guid}")]
+    [Authorize]
+    [RequirePermission(Permission.ManageUsers)]
+    [ProducesResponseType(typeof(ApiResponse<AdminUserDetailDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Update(Guid id, AdminUpdateUserDto dto)
+        => Ok(ApiResponse<AdminUserDetailDto>.Ok(await users.UpdateAsync(id, dto)));
+
+    [HttpPatch("{id:guid}/active")]
+    [Authorize]
+    [RequirePermission(Permission.ManageUsers)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SetActive(Guid id, SetUserActiveDto dto)
+    {
+        await users.SetActiveAsync(id, dto.IsActive);
+        return Ok(ApiResponse<object>.Ok(new { }));
+    }
 
     [HttpDelete("{userId:guid}")]
     [Authorize]
@@ -33,6 +60,16 @@ public class AdminUserController(IAdminUserService users) : ControllerBase
     public async Task<IActionResult> Delete(Guid userId)
     {
         await users.DeleteAsync(userId);
+        return Ok(ApiResponse<object>.Ok(new { }));
+    }
+
+    [HttpPost("{id:guid}/permissions/recompute")]
+    [Authorize]
+    [RequirePermission(Permission.ManageUsers)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RecomputePerms(Guid id)
+    {
+        await users.RecomputePermissionsAsync(id);
         return Ok(ApiResponse<object>.Ok(new { }));
     }
 }

@@ -18,7 +18,7 @@ public class EnrollmentsController(IEnrollmentService enrollments) : ControllerB
     [RequirePermission(Permission.ManageStudents)]
     public async Task<IActionResult> EnrollInCourse(Guid studentId, EnrollInCourseDto dto)
     {
-        var result = await enrollments.EnrolStudentInCourseAsync(studentId, dto);
+        var result = await enrollments.EnrollStudentInCourseAsync(studentId, dto);
         return StatusCode(201, ApiResponse<CourseEnrollmentDto>.Ok(result, 201));
     }
 

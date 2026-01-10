@@ -6,6 +6,7 @@ export interface SnackbarMessage {
   statusCode: number;
   errorCode?: string;
   id: number;
+  removing?: boolean;
 }
 
 @Injectable({
@@ -15,12 +16,20 @@ export class SnackbarService {
   private messagesSubject = new BehaviorSubject<SnackbarMessage[]>([]);
   public messages$ = this.messagesSubject.asObservable();
   private messageId = 0;
+  private readonly MAX_MESSAGES = 5;
 
   show(message: string, statusCode: number = 200, errorCode?: string): void {
     const id = this.messageId++;
-    const snackbar: SnackbarMessage = { message, statusCode, errorCode, id };
+    const snackbar: SnackbarMessage = { message, statusCode, errorCode, id, removing: false };
 
-    const current = this.messagesSubject.value;
+    let current = this.messagesSubject.value;
+
+    if (current.length >= this.MAX_MESSAGES) {
+      const oldestId = current[0].id;
+      this.remove(oldestId);
+    }
+
+    current = this.messagesSubject.value;
     this.messagesSubject.next([...current, snackbar]);
 
     setTimeout(() => {
@@ -37,6 +46,12 @@ export class SnackbarService {
 
   remove(id: number): void {
     const current = this.messagesSubject.value;
-    this.messagesSubject.next(current.filter(m => m.id !== id));
+    const updated = current.map(m => m.id === id ? { ...m, removing: true } : m);
+    this.messagesSubject.next(updated);
+
+    setTimeout(() => {
+      const filtered = this.messagesSubject.value.filter(m => m.id !== id);
+      this.messagesSubject.next(filtered);
+    }, 300);
   }
 }
