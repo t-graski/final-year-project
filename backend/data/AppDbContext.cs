@@ -14,8 +14,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<Module> Modules => Set<Module>();
     public DbSet<ModuleStaff> ModuleStaff => Set<ModuleStaff>();
-
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<StudentCourseEnrollment> StudentCourseEnrollments => Set<StudentCourseEnrollment>();
+    public DbSet<StudentModuleEnrollment> StudentModuleEnrollments => Set<StudentModuleEnrollment>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -126,6 +127,62 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.ToTable("audit_events");
             e.HasKey(x => x.AuditEventId);
+        });
+
+        // --- STUDENT COURSE ENROLLMENTS ---
+        b.Entity<StudentCourseEnrollment>(e =>
+        {
+            e.ToTable("student_course_enrollments");
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Status)
+                .HasConversion<short>()
+                .IsRequired();
+
+            e.Property(x => x.AcademicYear).IsRequired();
+            e.Property(x => x.YearOfStudy).IsRequired();
+            e.Property(x => x.Semester).IsRequired();
+
+            e.HasOne(x => x.Student)
+                .WithMany(s => s.CourseEnrollments)
+                .HasForeignKey(x => x.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(x => x.Course)
+                .WithMany(c => c.StudentEnrollments)
+                .HasForeignKey(x => x.CourseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasIndex(x => new { x.StudentId, x.CourseId, x.AcademicYear, x.Semester })
+                .IsUnique();
+        });
+
+        // --- Student Module Enrollment ---
+        b.Entity<StudentModuleEnrollment>(e =>
+        {
+            e.ToTable("student_module_enrollments");
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Status)
+                .HasConversion<short>()
+                .IsRequired();
+
+            e.Property(x => x.AcademicYear).IsRequired();
+            e.Property(x => x.YearOfStudy).IsRequired();
+            e.Property(x => x.Semester).IsRequired();
+
+            e.HasOne(x => x.Student)
+                .WithMany(s => s.ModuleEnrollments)
+                .HasForeignKey(x => x.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(x => x.Module)
+                .WithMany(m => m.StudentEnrollments)
+                .HasForeignKey(x => x.ModuleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasIndex(x => new { x.StudentId, x.ModuleId, x.AcademicYear, x.Semester })
+                .IsUnique();
         });
     }
 

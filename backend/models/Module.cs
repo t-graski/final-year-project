@@ -17,4 +17,6 @@ public class Module : SoftDeletableEntity<Guid>
     public string? Term { get; set; }
 
     public ICollection<ModuleStaff> TeachingStaff { get; set; } = new List<ModuleStaff>();
+
+    public ICollection<StudentModuleEnrollment> StudentEnrollments { get; set; } = [];
 }

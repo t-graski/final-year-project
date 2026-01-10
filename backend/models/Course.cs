@@ -13,4 +13,6 @@ public class Course : SoftDeletableEntity<Guid>
     public bool IsActive { get; set; }
 
     public ICollection<Module> Modules { get; set; } = new List<Module>();
+
+    public ICollection<StudentCourseEnrollment> StudentEnrollments { get; set; } = [];
 }
