@@ -50,7 +50,7 @@ export class Login {
         this.cdr.markForCheck();
       }))
       .subscribe({
-        next: () => void this.router.navigateByUrl('/attendance'),
+        next: () => void this.router.navigateByUrl('/dashboard'),
         error: (err) => {
           if (err?.status === 401) this.errorMessage = 'Invalid email or password.';
           else this.errorMessage = 'Login failed. Please try again.';

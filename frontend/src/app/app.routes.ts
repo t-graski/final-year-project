@@ -20,6 +20,7 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    component: StudentDashboardComponent
+    component: StudentDashboardComponent,
+    canActivate: [authGuard]
   }
 ];

@@ -1,5 +1,6 @@
 ﻿using backend.auth;
 using backend.dtos;
+using backend.models;
 using backend.responses;
 using backend.services.interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -12,6 +13,7 @@ namespace backend.controllers;
 public class EnrollmentsController(IEnrollmentService enrollments) : ControllerBase
 {
     [HttpPost("students/{studentId:guid}/course")]
+    [ProducesResponseType(typeof(ApiResponse<CourseEnrollmentDto>), StatusCodes.Status201Created)]
     [Authorize]
     [RequirePermission(Permission.ManageStudents)]
     public async Task<IActionResult> EnrollInCourse(Guid studentId, EnrollInCourseDto dto)
@@ -21,6 +23,7 @@ public class EnrollmentsController(IEnrollmentService enrollments) : ControllerB
     }
 
     [HttpPatch("student/{studentId:guid}/course/status")]
+    [ProducesResponseType(typeof(ApiResponse<CourseEnrollmentDto>), StatusCodes.Status201Created)]
     [Authorize]
     [RequirePermission(Permission.ManageStudents)]
     public async Task<IActionResult> SetCourseStatus(Guid studentId, SetCourseEnrollmentStatusDto dto)
@@ -30,6 +33,7 @@ public class EnrollmentsController(IEnrollmentService enrollments) : ControllerB
     }
 
     [HttpPost("students/{studentId:guid}/modules/{moduleId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<ModuleCardDto>), StatusCodes.Status201Created)]
     [Authorize]
     [RequirePermission(Permission.ManageStudents)]
     public async Task<IActionResult> EnrollInModule(Guid studentId, Guid moduleId, EnrollInModuleDto dto)
@@ -39,6 +43,7 @@ public class EnrollmentsController(IEnrollmentService enrollments) : ControllerB
     }
 
     [HttpPatch("module/enrollments/{enrollmentId:guid}/status")]
+    [ProducesResponseType(typeof(ApiResponse<ModuleCardDto>), StatusCodes.Status200OK)]
     [Authorize]
     [RequirePermission(Permission.ManageStudents)]
     public async Task<IActionResult> SetModuleStatus(Guid enrollmentId, SetModuleEnrollmentStatusDto dto)
@@ -48,6 +53,7 @@ public class EnrollmentsController(IEnrollmentService enrollments) : ControllerB
     }
 
     [HttpGet("students/{studentId:guid}/dashboard")]
+    [ProducesResponseType(typeof(ApiResponse<StudentDashboardDto>), StatusCodes.Status200OK)]
     [Authorize]
     [RequirePermission(Permission.ViewStudents)]
     public async Task<IActionResult> StudentDashboard(Guid studentId)

@@ -8,10 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace backend.controllers;
 
 [ApiController]
+[ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
 [Route("api/me")]
 public class MeController(IEnrollmentService enrollments) : ControllerBase
 {
     [HttpGet("dashboard")]
+    [ProducesResponseType(typeof(ApiResponse<StudentDashboardDto>), StatusCodes.Status200OK)]
     [Authorize]
     public async Task<IActionResult> Dashboard()
     {
