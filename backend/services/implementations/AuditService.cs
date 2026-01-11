@@ -20,17 +20,17 @@ public class AuditService(AppDbContext db) : IAuditService
         if (!string.IsNullOrWhiteSpace(entityType)) q = q.Where(x => x.EntityType == entityType);
         if (!string.IsNullOrWhiteSpace(entityId)) q = q.Where(x => x.EntityId == entityId);
         if (!string.IsNullOrWhiteSpace(action)) q = q.Where(x => x.Action == action);
-
-        if (fromUtc.HasValue) q = q.Where(x => x.OccuredAtUtc >= fromUtc.Value);
-        if (toUtc.HasValue) q = q.Where(x => x.OccuredAtUtc <= toUtc.Value);
+        
+        // if (fromUtc.HasValue) q = q.Where(x => x.OccuredAtUtc >= fromUtc.Value);
+        // if (toUtc.HasValue) q = q.Where(x => x.OccuredAtUtc <= toUtc.Value);
 
         return await q
-            .OrderByDescending(x => x.OccuredAtUtc)
+            .OrderByDescending(x => x.OccurredAtUtc)
             .Skip(offset)
             .Take(limit)
             .Select(x => new AuditEventDto(
                 x.AuditEventId,
-                x.OccuredAtUtc,
+                x.OccurredAtUtc,
                 x.ActorUserId,
                 x.Action,
                 x.EntityType,

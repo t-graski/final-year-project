@@ -4,6 +4,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {AdminUserService} from '../../api/api/adminUser.service';
 import {AdminCatalogService} from '../../api/api/adminCatalog.service';
 import {AdminEnrollmentService} from '../../api/api/adminEnrollment.service';
+import {AdminAuditService} from '../../api/api/adminAudit.service';
 import {EnrollmentQueriesService} from '../../api/api/enrollmentQueries.service';
 import {UserService} from '../../services/user.service';
 import {SnackbarService} from '../../services/snackbar.service';
@@ -14,10 +15,11 @@ import {AdminUserListItemDto} from '../../api/model/adminUserListItemDto';
 import {AdminCourseDto} from '../../api/model/adminCourseDto';
 import {AdminModuleDto} from '../../api/model/adminModuleDto';
 import {StudentEnrollmentHistoryDto} from '../../api/model/studentEnrollmentHistoryDto';
+import {AuditEventDto} from '../../api/model/auditEventDto';
 import {DynamicTableComponent, TableColumn, TableAction} from '../dynamic-table/dynamic-table.component';
 import {EnrollmentDetailsComponent} from '../enrollment-details/enrollment-details.component';
 
-type AdminView = 'users' | 'courses' | 'modules' | 'enroll-course' | 'enroll-module';
+type AdminView = 'users' | 'courses' | 'modules' | 'enroll-course' | 'enroll-module' | 'audit';
 type EnrollmentMode = 'user' | 'course' | 'module';
 
 @Component({
@@ -30,10 +32,14 @@ export class AdminDashboardComponent implements OnInit {
   private readonly adminUserService = inject(AdminUserService);
   private readonly adminCatalogService = inject(AdminCatalogService);
   private readonly adminEnrollmentService = inject(AdminEnrollmentService);
+  private readonly adminAuditService = inject(AdminAuditService);
   private readonly enrollmentQueriesService = inject(EnrollmentQueriesService);
   private readonly userService = inject(UserService);
   private readonly snackbarService = inject(SnackbarService);
   private readonly router = inject(Router);
+
+  // Expose Object for template
+  protected readonly Object = Object;
 
   currentView = signal<AdminView>('users');
   isLoading = signal(false);
@@ -186,6 +192,18 @@ export class AdminDashboardComponent implements OnInit {
   // Track student enrollment data for getting academicYear, yearOfStudy, and semester
   studentEnrollmentDataCache = signal<Map<string, StudentEnrollmentHistoryDto>>(new Map());
   isLoadingEnrollmentData = signal(false);
+
+  // Audit Log
+  auditEvents = signal<AuditEventDto[]>([]);
+  auditFilters = signal({
+    actorUserId: '',
+    entityType: '',
+    entityId: '',
+    action: '',
+    fromUtc: '',
+    toUtc: '',
+  });
+  showAuditEventDetails = signal<string | null>(null);
   enrollmentDetailsEntityId = signal<string>('');
   enrollmentDetailsEntityName = signal<string>('');
 
@@ -413,6 +431,9 @@ export class AdminDashboardComponent implements OnInit {
           this.loadCourses();
         }
         break;
+      case 'audit':
+        this.loadAuditEvents();
+        break;
     }
   }
 
@@ -496,6 +517,146 @@ export class AdminDashboardComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  loadAuditEvents(): void {
+    this.isLoading.set(true);
+    const filters = this.auditFilters();
+
+    this.adminAuditService.apiAdminAuditGet(
+      filters.actorUserId || undefined,
+      filters.entityType || undefined,
+      filters.entityId || undefined,
+      filters.action || undefined,
+      filters.fromUtc || undefined,
+      filters.toUtc || undefined,
+      100, // limit
+      0 // offset
+    ).subscribe({
+      next: (response) => {
+        const auditData = response.data;
+        if (Array.isArray(auditData)) {
+          this.auditEvents.set(auditData);
+        } else {
+          this.auditEvents.set([]);
+        }
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
+        const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to load audit events';
+        this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  updateAuditFilter(key: 'actorUserId' | 'entityType' | 'entityId' | 'action' | 'fromUtc' | 'toUtc', value: string): void {
+    this.auditFilters.update(filters => ({
+      ...filters,
+      [key]: value
+    }));
+  }
+
+  applyAuditFilters(): void {
+    this.loadAuditEvents();
+  }
+
+  clearAuditFilters(): void {
+    this.auditFilters.set({
+      actorUserId: '',
+      entityType: '',
+      entityId: '',
+      action: '',
+      fromUtc: '',
+      toUtc: '',
+    });
+    this.loadAuditEvents();
+  }
+
+  viewAuditEventDetails(eventId: string): void {
+    this.showAuditEventDetails.set(eventId);
+  }
+
+  closeAuditEventDetails(): void {
+    this.showAuditEventDetails.set(null);
+  }
+
+  formatAuditDate(dateString: string | null | undefined): string {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  }
+
+  getActionIcon(action: string | null | undefined): string {
+    if (!action) return 'info';
+    const actionUpper = action.toUpperCase();
+
+    switch (actionUpper) {
+      case 'INSERT': return 'add_circle';
+      case 'UPDATE': return 'edit';
+      case 'SOFT_DELETE': return 'delete_outline';
+      case 'HARD_DELETE': return 'delete_forever';
+      default:
+        // Fallback for other actions
+        const actionLower = action.toLowerCase();
+        if (actionLower.includes('create') || actionLower.includes('insert')) return 'add_circle';
+        if (actionLower.includes('update') || actionLower.includes('edit')) return 'edit';
+        if (actionLower.includes('soft') && actionLower.includes('delete')) return 'delete_outline';
+        if (actionLower.includes('hard') && actionLower.includes('delete')) return 'delete_forever';
+        if (actionLower.includes('delete')) return 'delete';
+        if (actionLower.includes('enroll')) return 'person_add';
+        if (actionLower.includes('login')) return 'login';
+        if (actionLower.includes('logout')) return 'logout';
+        return 'event';
+    }
+  }
+
+  getActionColor(action: string | null | undefined): string {
+    if (!action) return 'action-default';
+    const actionUpper = action.toUpperCase();
+
+    switch (actionUpper) {
+      case 'INSERT': return 'action-insert';
+      case 'UPDATE': return 'action-update';
+      case 'SOFT_DELETE': return 'action-soft-delete';
+      case 'HARD_DELETE': return 'action-hard-delete';
+      default:
+        // Fallback for other actions
+        const actionLower = action.toLowerCase();
+        if (actionLower.includes('create') || actionLower.includes('insert')) return 'action-insert';
+        if (actionLower.includes('update') || actionLower.includes('edit')) return 'action-update';
+        if (actionLower.includes('soft') && actionLower.includes('delete')) return 'action-soft-delete';
+        if (actionLower.includes('hard') && actionLower.includes('delete')) return 'action-hard-delete';
+        if (actionLower.includes('delete')) return 'action-delete';
+        if (actionLower.includes('enroll')) return 'action-enroll';
+        return 'action-default';
+    }
+  }
+
+  parseChangesJson(changesJson: string | null | undefined): any {
+    if (!changesJson) return null;
+    try {
+      return JSON.parse(changesJson);
+    } catch {
+      return null;
+    }
+  }
+
+  hasChanges(changesJson: string | null | undefined): boolean {
+    const changes = this.parseChangesJson(changesJson);
+    return changes && changes.Fields && Object.keys(changes.Fields).length > 0;
   }
 
   async enrollInCourse(): Promise<void> {

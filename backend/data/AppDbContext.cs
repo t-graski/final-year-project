@@ -142,7 +142,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.ChangesJson).HasColumnType("jsonb");
             e.Property(x => x.MetadataJson).HasColumnType("jsonb");
 
-            e.HasIndex(x => x.OccuredAtUtc);
+            e.HasIndex(x => x.OccurredAtUtc);
             e.HasIndex(x => new { x.EntityType, x.EntityId });
             e.HasIndex(x => x.ActorUserId);
 
@@ -334,7 +334,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             list.Add(new AuditEvent
             {
-                OccuredAtUtc = now,
+                OccurredAtUtc = now,
                 ActorUserId = ActorUserId,
                 Action = action,
                 EntityType = entityType,
