@@ -1,3 +1,5 @@
+export * from './adminAudit.service';
+import { AdminAuditService } from './adminAudit.service';
 export * from './adminCatalog.service';
 import { AdminCatalogService } from './adminCatalog.service';
 export * from './adminEnrollment.service';
@@ -14,4 +16,4 @@ export * from './me.service';
 import { MeService } from './me.service';
 export * from './user.service';
 import { UserService } from './user.service';
-export const APIS = [AdminCatalogService, AdminEnrollmentService, AdminUserService, AuthService, EnrollmentQueriesService, EnrollmentsService, MeService, UserService];
+export const APIS = [AdminAuditService, AdminCatalogService, AdminEnrollmentService, AdminUserService, AuthService, EnrollmentQueriesService, EnrollmentsService, MeService, UserService];

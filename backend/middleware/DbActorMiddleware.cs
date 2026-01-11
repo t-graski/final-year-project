@@ -7,6 +7,9 @@ public class DbActorMiddleware(RequestDelegate next)
 {
     public async Task Invoke(HttpContext context, AppDbContext db)
     {
+        db.RequestPath = context.Request.Path.ToString();
+        db.CorrelationId = context.TraceIdentifier;
+        
         if (context.User?.Identity?.IsAuthenticated == true)
         {
             var idStr =

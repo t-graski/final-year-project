@@ -65,7 +65,8 @@
           <div class="view-container">
             <div class="view-header">
               <h2>Users Management</h2>
-              <button class="action-btn-toolbar action-btn-toolbar--primary" (click)="openCreateUserModal()" title="Add new user">
+              <button class="action-btn-toolbar action-btn-toolbar--primary"
+                      (click)="openCreateUserModal()" title="Add new user">
                 <mat-icon fontIcon="add"></mat-icon>
                 <span>Add User</span>
               </button>
@@ -87,7 +88,8 @@
           <div class="view-container">
             <div class="view-header">
               <h2>Courses Management</h2>
-              <button class="action-btn-toolbar action-btn-toolbar--primary" (click)="openCreateCourseModal()" title="Add new course">
+              <button class="action-btn-toolbar action-btn-toolbar--primary"
+                      (click)="openCreateCourseModal()" title="Add new course">
                 <mat-icon fontIcon="add"></mat-icon>
                 <span>Add Course</span>
               </button>
@@ -112,14 +114,18 @@
               <div class="view-actions">
                 <div class="form-group-inline">
                   <label for="course-filter">Course:</label>
-                  <select id="course-filter" [(ngModel)]="selectedCourseId" (change)="loadModules()" class="form-control-inline">
+                  <select id="course-filter" [(ngModel)]="selectedCourseId" (change)="loadModules()"
+                          class="form-control-inline">
                     <option value="">-- Select Course --</option>
                     @for (course of courses(); track course.id) {
-                      <option [value]="course.id">{{ course.courseCode }} - {{ course.title }}</option>
+                      <option [value]="course.id">{{ course.courseCode }}- {{ course.title }}
+                      </option>
                     }
                   </select>
                 </div>
-                <button class="action-btn-toolbar action-btn-toolbar--primary" (click)="openCreateModuleModal()" title="Add new module" [disabled]="!selectedCourseId()">
+                <button class="action-btn-toolbar action-btn-toolbar--primary"
+                        (click)="openCreateModuleModal()" title="Add new module"
+                        [disabled]="!selectedCourseId()">
                   <mat-icon fontIcon="add"></mat-icon>
                   <span>Add Module</span>
                 </button>
@@ -144,7 +150,16 @@
               <h2>Enroll Students in Course</h2>
             </div>
 
-            <div class="enrollment-container">
+            @if (isLoadingEnrollmentData()) {
+              <div class="loading-overlay">
+                <div class="loading-spinner">
+                  <mat-icon fontIcon="hourglass_empty" class="spinning"></mat-icon>
+                  <p>Loading student enrollment data...</p>
+                </div>
+              </div>
+            }
+
+            <div class="enrollment-container" [class.disabled]="isLoadingEnrollmentData()">
               <div class="enrollment-section">
                 <h3>Select Students</h3>
                 <div class="search-bar">
@@ -154,33 +169,43 @@
                     placeholder="Search students by name or email..."
                     [(ngModel)]="studentSearchQuery"
                     class="search-input"
+                    [disabled]="isLoadingEnrollmentData() || isLoading()"
                   />
                 </div>
 
-                <div class="student-list">
-                  @for (user of getFilteredStudents(); track user.id) {
-                    <label class="student-item" [class.student-item--selected]="isStudentSelected(user.id!)">
-                      <input
-                        type="checkbox"
-                        [checked]="isStudentSelected(user.id!)"
-                        (change)="toggleStudentSelection(user.id!)"
-                      />
-                      <div class="student-info">
-                        <span class="student-name">{{ user.firstName }} {{ user.lastName }}</span>
-                        <span class="student-email">{{ user.email }}</span>
+                @if (isLoading()) {
+                  <div class="section-loading">
+                    <mat-icon fontIcon="refresh" class="spinning"></mat-icon>
+                    <p>Loading students...</p>
+                  </div>
+                } @else {
+                  <div class="student-list">
+                    @for (user of getFilteredStudents(); track user.id) {
+                      <label class="student-item"
+                             [class.student-item--selected]="isStudentSelected(user.id!)">
+                        <input
+                          type="checkbox"
+                          [checked]="isStudentSelected(user.id!)"
+                          (change)="toggleStudentSelection(user.id!)"
+                          [disabled]="isLoadingEnrollmentData()"
+                        />
+                        <div class="student-info">
+                          <span class="student-name">{{ user.firstName }} {{ user.lastName }}</span>
+                          <span class="student-email">{{ user.email }}</span>
+                        </div>
+                      </label>
+                    } @empty {
+                      <div class="empty-state">
+                        <mat-icon fontIcon="person_off"></mat-icon>
+                        <p>No students found</p>
                       </div>
-                    </label>
-                  } @empty {
-                    <div class="empty-state">
-                      <mat-icon fontIcon="person_off"></mat-icon>
-                      <p>No students found</p>
-                    </div>
-                  }
-                </div>
+                    }
+                  </div>
 
-                <div class="selection-summary">
-                  {{ getSelectedStudentIds().length }} student(s) selected
-                </div>
+                  <div class="selection-summary">
+                    {{ getSelectedStudentIds().length }} student(s) selected
+                  </div>
+                }
               </div>
 
               <div class="enrollment-section">
@@ -192,26 +217,35 @@
                     placeholder="Search courses by code or title..."
                     [(ngModel)]="courseSearchQuery"
                     class="search-input"
+                    [disabled]="isLoadingEnrollmentData() || isLoading()"
                   />
                 </div>
 
-                <div class="course-list">
-                  @for (course of getFilteredCourses(); track course.id) {
-                    <div
-                      class="course-item"
-                      [class.course-item--selected]="selectedCourseId() === course.id"
-                      (click)="selectCourseForEnrollment(course.id!)"
-                    >
-                      <div class="course-code">{{ course.courseCode }}</div>
-                      <div class="course-title">{{ course.title }}</div>
-                    </div>
-                  } @empty {
-                    <div class="empty-state">
-                      <mat-icon fontIcon="school"></mat-icon>
-                      <p>No courses found</p>
-                    </div>
-                  }
-                </div>
+                @if (isLoading()) {
+                  <div class="section-loading">
+                    <mat-icon fontIcon="refresh" class="spinning"></mat-icon>
+                    <p>Loading courses...</p>
+                  </div>
+                } @else {
+                  <div class="course-list">
+                    @for (course of getFilteredCourses(); track course.id) {
+                      <div
+                        class="course-item"
+                        [class.course-item--selected]="selectedCourseId() === course.id"
+                        [class.disabled]="isLoadingEnrollmentData()"
+                        (click)="!isLoadingEnrollmentData() && selectCourseForEnrollment(course.id!)"
+                      >
+                        <div class="course-code">{{ course.courseCode }}</div>
+                        <div class="course-title">{{ course.title }}</div>
+                      </div>
+                    } @empty {
+                      <div class="empty-state">
+                        <mat-icon fontIcon="school"></mat-icon>
+                        <p>No courses found</p>
+                      </div>
+                    }
+                  </div>
+                }
               </div>
             </div>
 
@@ -219,7 +253,7 @@
               <button
                 class="btn-primary btn-large"
                 (click)="enrollStudentsInCourse()"
-                [disabled]="!canEnrollInCourse()"
+                [disabled]="!canEnrollInCourse() || isLoadingEnrollmentData()"
               >
                 <mat-icon fontIcon="person_add"></mat-icon>
                 Enroll {{ getSelectedStudentIds().length }} Student(s) in Course
@@ -234,7 +268,16 @@
               <h2>Enroll Students in Module</h2>
             </div>
 
-            <div class="enrollment-container">
+            @if (isLoadingEnrollmentData()) {
+              <div class="loading-overlay">
+                <div class="loading-spinner">
+                  <mat-icon fontIcon="hourglass_empty" class="spinning"></mat-icon>
+                  <p>Loading student enrollment data...</p>
+                </div>
+              </div>
+            }
+
+            <div class="enrollment-container" [class.disabled]="isLoadingEnrollmentData()">
               <div class="enrollment-section">
                 <h3>Select Students</h3>
                 <div class="search-bar">
@@ -244,47 +287,67 @@
                     placeholder="Search students by name or email..."
                     [(ngModel)]="studentSearchQuery"
                     class="search-input"
+                    [disabled]="isLoadingEnrollmentData() || isLoading()"
                   />
                 </div>
 
-                <div class="student-list">
-                  @for (user of getFilteredStudents(); track user.id) {
-                    <label class="student-item" [class.student-item--selected]="isStudentSelected(user.id!)">
-                      <input
-                        type="checkbox"
-                        [checked]="isStudentSelected(user.id!)"
-                        (change)="toggleStudentSelection(user.id!)"
-                      />
-                      <div class="student-info">
-                        <span class="student-name">{{ user.firstName }} {{ user.lastName }}</span>
-                        <span class="student-email">{{ user.email }}</span>
+                @if (isLoading()) {
+                  <div class="section-loading">
+                    <mat-icon fontIcon="refresh" class="spinning"></mat-icon>
+                    <p>Loading students...</p>
+                  </div>
+                } @else {
+                  <div class="student-list">
+                    @for (user of getFilteredStudents(); track user.id) {
+                      <label class="student-item"
+                             [class.student-item--selected]="isStudentSelected(user.id!)">
+                        <input
+                          type="checkbox"
+                          [checked]="isStudentSelected(user.id!)"
+                          (change)="toggleStudentSelection(user.id!)"
+                          [disabled]="isLoadingEnrollmentData()"
+                        />
+                        <div class="student-info">
+                          <span class="student-name">{{ user.firstName }} {{ user.lastName }}</span>
+                          <span class="student-email">{{ user.email }}</span>
+                        </div>
+                      </label>
+                    } @empty {
+                      <div class="empty-state">
+                        <mat-icon fontIcon="person_off"></mat-icon>
+                        <p>No students found</p>
                       </div>
-                    </label>
-                  } @empty {
-                    <div class="empty-state">
-                      <mat-icon fontIcon="person_off"></mat-icon>
-                      <p>No students found</p>
-                    </div>
-                  }
-                </div>
+                    }
+                  </div>
 
-                <div class="selection-summary">
-                  {{ getSelectedStudentIds().length }} student(s) selected
-                </div>
+                  <div class="selection-summary">
+                    {{ getSelectedStudentIds().length }} student(s) selected
+                  </div>
+                }
               </div>
 
               <div class="enrollment-section">
                 <h3>Select Module</h3>
 
-                <div class="form-group">
-                  <label for="course-filter-module">Course:</label>
-                  <select id="course-filter-module" [(ngModel)]="selectedCourseId" (change)="loadModules()" class="form-control-inline">
-                    <option value="">-- Select Course --</option>
-                    @for (course of courses(); track course.id) {
-                      <option [value]="course.id">{{ course.courseCode }} - {{ course.title }}</option>
-                    }
-                  </select>
-                </div>
+                @if (isLoading()) {
+                  <div class="section-loading">
+                    <mat-icon fontIcon="refresh" class="spinning"></mat-icon>
+                    <p>Loading courses...</p>
+                  </div>
+                } @else {
+                  <div class="form-group">
+                    <label for="course-filter-module">Course:</label>
+                    <select id="course-filter-module" [(ngModel)]="selectedCourseId"
+                            (change)="loadModules()" class="form-control-inline"
+                            [disabled]="isLoadingEnrollmentData()">
+                      <option value="">-- Select Course --</option>
+                      @for (course of courses(); track course.id) {
+                        <option [value]="course.id">{{ course.courseCode }}- {{ course.title }}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
 
                 <div class="search-bar">
                   <mat-icon fontIcon="search"></mat-icon>
@@ -293,6 +356,7 @@
                     placeholder="Search modules by code or title..."
                     [(ngModel)]="moduleSearchQuery"
                     class="search-input"
+                    [disabled]="isLoadingEnrollmentData()"
                   />
                 </div>
 
@@ -301,7 +365,8 @@
                     <div
                       class="module-item"
                       [class.module-item--selected]="selectedModuleId() === module.id"
-                      (click)="selectModuleForEnrollment(module.id!)"
+                      [class.disabled]="isLoadingEnrollmentData()"
+                      (click)="!isLoadingEnrollmentData() && selectModuleForEnrollment(module.id!)"
                     >
                       <div class="module-code">{{ module.moduleCode }}</div>
                       <div class="module-title">{{ module.title }}</div>
@@ -320,7 +385,7 @@
               <button
                 class="btn-primary btn-large"
                 (click)="enrollStudentsInModule()"
-                [disabled]="!canEnrollInModule()"
+                [disabled]="!canEnrollInModule() || isLoadingEnrollmentData()"
               >
                 <mat-icon fontIcon="person_add"></mat-icon>
                 Enroll {{ getSelectedStudentIds().length }} Student(s) in Module
@@ -348,7 +413,8 @@
                 <span class="detail-label">User Id:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ user.id }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(user.id, 'User Id')" title="Copy User ID">
+                  <button class="copy-btn" (click)="copyToClipboard(user.id, 'User Id')"
+                          title="Copy User ID">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -357,7 +423,8 @@
                 <span class="detail-label">First Name:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ user.firstName || 'N/A' }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(user.firstName, 'First Name')" title="Copy First Name">
+                  <button class="copy-btn" (click)="copyToClipboard(user.firstName, 'First Name')"
+                          title="Copy First Name">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -366,7 +433,8 @@
                 <span class="detail-label">Last Name:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ user.lastName || 'N/A' }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(user.lastName, 'Last Name')" title="Copy Last Name">
+                  <button class="copy-btn" (click)="copyToClipboard(user.lastName, 'Last Name')"
+                          title="Copy Last Name">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -375,7 +443,8 @@
                 <span class="detail-label">Email:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ user.email }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(user.email, 'Email')" title="Copy Email">
+                  <button class="copy-btn" (click)="copyToClipboard(user.email, 'Email')"
+                          title="Copy Email">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -384,7 +453,9 @@
                 <span class="detail-label">Roles:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ getRoleName(user.roles) }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(getRoleName(user.roles), 'Roles')" title="Copy Roles">
+                  <button class="copy-btn"
+                          (click)="copyToClipboard(getRoleName(user.roles), 'Roles')"
+                          title="Copy Roles">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -392,7 +463,8 @@
               <div class="detail-row">
                 <span class="detail-label">Status:</span>
                 <span class="detail-value">
-                  <span class="status" [class.status--active]="user.isActive" [class.status--inactive]="!user.isActive">
+                  <span class="status" [class.status--active]="user.isActive"
+                        [class.status--inactive]="!user.isActive">
                     {{ user.isActive ? 'Active' : 'Inactive' }}
                   </span>
                 </span>
@@ -401,7 +473,9 @@
                 <span class="detail-label">Permissions:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ user.permissions }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(user.permissions?.toString(), 'Permissions')" title="Copy Permissions">
+                  <button class="copy-btn"
+                          (click)="copyToClipboard(user.permissions?.toString(), 'Permissions')"
+                          title="Copy Permissions">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -425,7 +499,8 @@
   }
 
   @if (contextMenuUserId() && contextMenuPosition(); as pos) {
-    <div class="context-menu" [style.left.px]="pos.x" [style.top.px]="pos.y" (click)="$event.stopPropagation()">
+    <div class="context-menu" [style.left.px]="pos.x" [style.top.px]="pos.y"
+         (click)="$event.stopPropagation()">
       <button class="context-menu-item" (click)="handleViewDetails()">
         <mat-icon fontIcon="visibility"></mat-icon>
         <span>View Details</span>
@@ -460,7 +535,8 @@
   }
 
   @if (contextMenuCourseId() && contextMenuPosition(); as pos) {
-    <div class="context-menu" [style.left.px]="pos.x" [style.top.px]="pos.y" (click)="$event.stopPropagation()">
+    <div class="context-menu" [style.left.px]="pos.x" [style.top.px]="pos.y"
+         (click)="$event.stopPropagation()">
       <button class="context-menu-item" (click)="handleViewCourse()">
         <mat-icon fontIcon="visibility"></mat-icon>
         <span>View Details</span>
@@ -482,7 +558,8 @@
   }
 
   @if (contextMenuModuleId() && contextMenuPosition(); as pos) {
-    <div class="context-menu" [style.left.px]="pos.x" [style.top.px]="pos.y" (click)="$event.stopPropagation()">
+    <div class="context-menu" [style.left.px]="pos.x" [style.top.px]="pos.y"
+         (click)="$event.stopPropagation()">
       <button class="context-menu-item" (click)="handleViewModule()">
         <mat-icon fontIcon="visibility"></mat-icon>
         <span>View Details</span>
@@ -515,19 +592,23 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="create-firstName">First Name</label>
-            <input type="text" id="create-firstName" class="form-control" placeholder="Enter first name" [(ngModel)]="newUser().firstName">
+            <input type="text" id="create-firstName" class="form-control"
+                   placeholder="Enter first name" [(ngModel)]="newUser().firstName">
           </div>
           <div class="form-group">
             <label for="create-lastName">Last Name</label>
-            <input type="text" id="create-lastName" class="form-control" placeholder="Enter last name" [(ngModel)]="newUser().lastName">
+            <input type="text" id="create-lastName" class="form-control"
+                   placeholder="Enter last name" [(ngModel)]="newUser().lastName">
           </div>
           <div class="form-group">
             <label for="create-email">Email</label>
-            <input type="email" id="create-email" class="form-control" placeholder="Enter email" [(ngModel)]="newUser().email">
+            <input type="email" id="create-email" class="form-control" placeholder="Enter email"
+                   [(ngModel)]="newUser().email">
           </div>
           <div class="form-group">
             <label for="create-password">Password</label>
-            <input type="password" id="create-password" class="form-control" placeholder="Enter password" [(ngModel)]="newUser().password">
+            <input type="password" id="create-password" class="form-control"
+                   placeholder="Enter password" [(ngModel)]="newUser().password">
           </div>
           <div class="form-group">
             <label for="create-role">Role</label>
@@ -571,23 +652,29 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="create-course-code">Course Code *</label>
-            <input type="text" id="create-course-code" class="form-control" placeholder="e.g., CS101" [(ngModel)]="newCourse().code">
+            <input type="text" id="create-course-code" class="form-control"
+                   placeholder="e.g., CS101" [(ngModel)]="newCourse().code">
           </div>
           <div class="form-group">
             <label for="create-course-title">Title *</label>
-            <input type="text" id="create-course-title" class="form-control" placeholder="Enter course title" [(ngModel)]="newCourse().title">
+            <input type="text" id="create-course-title" class="form-control"
+                   placeholder="Enter course title" [(ngModel)]="newCourse().title">
           </div>
           <div class="form-group">
             <label for="create-course-description">Description</label>
-            <textarea id="create-course-description" class="form-control" rows="3" placeholder="Enter course description" [(ngModel)]="newCourse().description"></textarea>
+            <textarea id="create-course-description" class="form-control" rows="3"
+                      placeholder="Enter course description"
+                      [(ngModel)]="newCourse().description"></textarea>
           </div>
           <div class="form-group">
             <label for="create-course-award">Award</label>
-            <input type="text" id="create-course-award" class="form-control" placeholder="e.g., BSc Computer Science" [(ngModel)]="newCourse().award">
+            <input type="text" id="create-course-award" class="form-control"
+                   placeholder="e.g., BSc Computer Science" [(ngModel)]="newCourse().award">
           </div>
           <div class="form-group">
             <label for="create-course-duration">Duration (Semesters)</label>
-            <input type="number" id="create-course-duration" class="form-control" min="0" placeholder="e.g., 6" [(ngModel)]="newCourse().durationSemesters">
+            <input type="number" id="create-course-duration" class="form-control" min="0"
+                   placeholder="e.g., 6" [(ngModel)]="newCourse().durationSemesters">
           </div>
           <div class="form-group">
             <label class="checkbox-label">
@@ -622,31 +709,39 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="create-module-code">Module Code *</label>
-            <input type="text" id="create-module-code" class="form-control" placeholder="e.g., CS201" [(ngModel)]="newModule().code">
+            <input type="text" id="create-module-code" class="form-control"
+                   placeholder="e.g., CS201" [(ngModel)]="newModule().code">
           </div>
           <div class="form-group">
             <label for="create-module-title">Title *</label>
-            <input type="text" id="create-module-title" class="form-control" placeholder="Enter module title" [(ngModel)]="newModule().title">
+            <input type="text" id="create-module-title" class="form-control"
+                   placeholder="Enter module title" [(ngModel)]="newModule().title">
           </div>
           <div class="form-group">
             <label for="create-module-description">Description</label>
-            <textarea id="create-module-description" class="form-control" rows="3" placeholder="Enter module description" [(ngModel)]="newModule().description"></textarea>
+            <textarea id="create-module-description" class="form-control" rows="3"
+                      placeholder="Enter module description"
+                      [(ngModel)]="newModule().description"></textarea>
           </div>
           <div class="form-group">
             <label for="create-module-credits">Credits</label>
-            <input type="number" id="create-module-credits" class="form-control" min="0" placeholder="e.g., 15" [(ngModel)]="newModule().credits">
+            <input type="number" id="create-module-credits" class="form-control" min="0"
+                   placeholder="e.g., 15" [(ngModel)]="newModule().credits">
           </div>
           <div class="form-group">
             <label for="create-module-level">Level</label>
-            <input type="number" id="create-module-level" class="form-control" min="0" placeholder="e.g., 4" [(ngModel)]="newModule().level">
+            <input type="number" id="create-module-level" class="form-control" min="0"
+                   placeholder="e.g., 4" [(ngModel)]="newModule().level">
           </div>
           <div class="form-group">
             <label for="create-module-semester">Semester of Study</label>
-            <input type="number" id="create-module-semester" class="form-control" min="1" placeholder="e.g., 1" [(ngModel)]="newModule().semesterOfStudy">
+            <input type="number" id="create-module-semester" class="form-control" min="1"
+                   placeholder="e.g., 1" [(ngModel)]="newModule().semesterOfStudy">
           </div>
           <div class="form-group">
             <label for="create-module-term">Term</label>
-            <input type="text" id="create-module-term" class="form-control" placeholder="e.g., Autumn" [(ngModel)]="newModule().term">
+            <input type="text" id="create-module-term" class="form-control"
+                   placeholder="e.g., Autumn" [(ngModel)]="newModule().term">
           </div>
 
           <div class="modal-actions">
@@ -679,7 +774,8 @@
                 <span class="detail-label">Course Id:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ course.id }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(course.id, 'Course Id')" title="Copy Course Id">
+                  <button class="copy-btn" (click)="copyToClipboard(course.id, 'Course Id')"
+                          title="Copy Course Id">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -688,7 +784,9 @@
                 <span class="detail-label">Course Code:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ course.courseCode }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(course.courseCode, 'Course Code')" title="Copy Course Code">
+                  <button class="copy-btn"
+                          (click)="copyToClipboard(course.courseCode, 'Course Code')"
+                          title="Copy Course Code">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -697,7 +795,8 @@
                 <span class="detail-label">Title:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ course.title }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(course.title, 'Title')" title="Copy Title">
+                  <button class="copy-btn" (click)="copyToClipboard(course.title, 'Title')"
+                          title="Copy Title">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -721,23 +820,28 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="edit-course-code">Course Code *</label>
-            <input type="text" id="edit-course-code" class="form-control" [(ngModel)]="editCourseData().code">
+            <input type="text" id="edit-course-code" class="form-control"
+                   [(ngModel)]="editCourseData().code">
           </div>
           <div class="form-group">
             <label for="edit-course-title">Title *</label>
-            <input type="text" id="edit-course-title" class="form-control" [(ngModel)]="editCourseData().title">
+            <input type="text" id="edit-course-title" class="form-control"
+                   [(ngModel)]="editCourseData().title">
           </div>
           <div class="form-group">
             <label for="edit-course-description">Description</label>
-            <textarea id="edit-course-description" class="form-control" rows="3" [(ngModel)]="editCourseData().description"></textarea>
+            <textarea id="edit-course-description" class="form-control" rows="3"
+                      [(ngModel)]="editCourseData().description"></textarea>
           </div>
           <div class="form-group">
             <label for="edit-course-award">Award</label>
-            <input type="text" id="edit-course-award" class="form-control" [(ngModel)]="editCourseData().award">
+            <input type="text" id="edit-course-award" class="form-control"
+                   [(ngModel)]="editCourseData().award">
           </div>
           <div class="form-group">
             <label for="edit-course-duration">Duration (Semesters)</label>
-            <input type="number" id="edit-course-duration" class="form-control" min="0" [(ngModel)]="editCourseData().durationSemesters">
+            <input type="number" id="edit-course-duration" class="form-control" min="0"
+                   [(ngModel)]="editCourseData().durationSemesters">
           </div>
           <div class="form-group">
             <label class="checkbox-label">
@@ -776,7 +880,8 @@
                 <span class="detail-label">Module Id:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ module.id }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(module.id, 'Module Id')" title="Copy Module Id">
+                  <button class="copy-btn" (click)="copyToClipboard(module.id, 'Module Id')"
+                          title="Copy Module Id">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -785,7 +890,9 @@
                 <span class="detail-label">Module Code:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ module.moduleCode }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(module.moduleCode, 'Module Code')" title="Copy Module Code">
+                  <button class="copy-btn"
+                          (click)="copyToClipboard(module.moduleCode, 'Module Code')"
+                          title="Copy Module Code">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -794,7 +901,8 @@
                 <span class="detail-label">Title:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ module.title }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(module.title, 'Title')" title="Copy Title">
+                  <button class="copy-btn" (click)="copyToClipboard(module.title, 'Title')"
+                          title="Copy Title">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -803,7 +911,8 @@
                 <span class="detail-label">Course Id:</span>
                 <div class="detail-value-group">
                   <span class="detail-value">{{ module.courseId }}</span>
-                  <button class="copy-btn" (click)="copyToClipboard(module.courseId, 'Course ID')" title="Copy Course ID">
+                  <button class="copy-btn" (click)="copyToClipboard(module.courseId, 'Course ID')"
+                          title="Copy Course ID">
                     <mat-icon fontIcon="content_copy"></mat-icon>
                   </button>
                 </div>
@@ -827,31 +936,38 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="edit-module-code">Module Code *</label>
-            <input type="text" id="edit-module-code" class="form-control" [(ngModel)]="editModuleData().code">
+            <input type="text" id="edit-module-code" class="form-control"
+                   [(ngModel)]="editModuleData().code">
           </div>
           <div class="form-group">
             <label for="edit-module-title">Title *</label>
-            <input type="text" id="edit-module-title" class="form-control" [(ngModel)]="editModuleData().title">
+            <input type="text" id="edit-module-title" class="form-control"
+                   [(ngModel)]="editModuleData().title">
           </div>
           <div class="form-group">
             <label for="edit-module-description">Description</label>
-            <textarea id="edit-module-description" class="form-control" rows="3" [(ngModel)]="editModuleData().description"></textarea>
+            <textarea id="edit-module-description" class="form-control" rows="3"
+                      [(ngModel)]="editModuleData().description"></textarea>
           </div>
           <div class="form-group">
             <label for="edit-module-credits">Credits</label>
-            <input type="number" id="edit-module-credits" class="form-control" min="0" [(ngModel)]="editModuleData().credits">
+            <input type="number" id="edit-module-credits" class="form-control" min="0"
+                   [(ngModel)]="editModuleData().credits">
           </div>
           <div class="form-group">
             <label for="edit-module-level">Level</label>
-            <input type="number" id="edit-module-level" class="form-control" min="0" [(ngModel)]="editModuleData().level">
+            <input type="number" id="edit-module-level" class="form-control" min="0"
+                   [(ngModel)]="editModuleData().level">
           </div>
           <div class="form-group">
             <label for="edit-module-semester">Semester of Study</label>
-            <input type="number" id="edit-module-semester" class="form-control" min="1" [(ngModel)]="editModuleData().semesterOfStudy">
+            <input type="number" id="edit-module-semester" class="form-control" min="1"
+                   [(ngModel)]="editModuleData().semesterOfStudy">
           </div>
           <div class="form-group">
             <label for="edit-module-term">Term</label>
-            <input type="text" id="edit-module-term" class="form-control" [(ngModel)]="editModuleData().term">
+            <input type="text" id="edit-module-term" class="form-control"
+                   [(ngModel)]="editModuleData().term">
           </div>
 
           <div class="modal-actions">
@@ -874,6 +990,8 @@
       [entityId]="enrollmentDetailsEntityId()"
       [entityName]="enrollmentDetailsEntityName()"
       (close)="closeEnrollmentDetails()"
+      (enrollStudents)="handleEnrollStudents($event)"
+      (cancelEnrollment)="handleCancelEnrollment($event)"
     ></app-enrollment-details>
   }
 

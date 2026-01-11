@@ -13,6 +13,8 @@ export * from './adminUserListItemDto';
 export * from './adminUserListItemDtoIReadOnlyListApiResponse';
 export * from './apiError';
 export * from './assignRoleDto';
+export * from './auditEventDto';
+export * from './auditEventDtoIReadOnlyListApiResponse';
 export * from './authResultDto';
 export * from './authResultDtoApiResponse';
 export * from './courseEnrollmentDto';

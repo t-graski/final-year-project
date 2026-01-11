@@ -4,6 +4,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {AdminUserService} from '../../api/api/adminUser.service';
 import {AdminCatalogService} from '../../api/api/adminCatalog.service';
 import {AdminEnrollmentService} from '../../api/api/adminEnrollment.service';
+import {EnrollmentQueriesService} from '../../api/api/enrollmentQueries.service';
 import {UserService} from '../../services/user.service';
 import {SnackbarService} from '../../services/snackbar.service';
 import {FormsModule} from '@angular/forms';
@@ -12,6 +13,7 @@ import {Navbar} from '../navbar/navbar';
 import {AdminUserListItemDto} from '../../api/model/adminUserListItemDto';
 import {AdminCourseDto} from '../../api/model/adminCourseDto';
 import {AdminModuleDto} from '../../api/model/adminModuleDto';
+import {StudentEnrollmentHistoryDto} from '../../api/model/studentEnrollmentHistoryDto';
 import {DynamicTableComponent, TableColumn, TableAction} from '../dynamic-table/dynamic-table.component';
 import {EnrollmentDetailsComponent} from '../enrollment-details/enrollment-details.component';
 
@@ -28,6 +30,7 @@ export class AdminDashboardComponent implements OnInit {
   private readonly adminUserService = inject(AdminUserService);
   private readonly adminCatalogService = inject(AdminCatalogService);
   private readonly adminEnrollmentService = inject(AdminEnrollmentService);
+  private readonly enrollmentQueriesService = inject(EnrollmentQueriesService);
   private readonly userService = inject(UserService);
   private readonly snackbarService = inject(SnackbarService);
   private readonly router = inject(Router);
@@ -179,6 +182,10 @@ export class AdminDashboardComponent implements OnInit {
 
   showEnrollmentDetails = signal<boolean>(false);
   enrollmentDetailsMode = signal<EnrollmentMode>('user');
+
+  // Track student enrollment data for getting academicYear, yearOfStudy, and semester
+  studentEnrollmentDataCache = signal<Map<string, StudentEnrollmentHistoryDto>>(new Map());
+  isLoadingEnrollmentData = signal(false);
   enrollmentDetailsEntityId = signal<string>('');
   enrollmentDetailsEntityName = signal<string>('');
 
@@ -388,6 +395,24 @@ export class AdminDashboardComponent implements OnInit {
       case 'modules':
         this.loadCourses();
         break;
+      case 'enroll-course':
+        // Auto-load users and courses if not already loaded
+        if (this.users().length === 0) {
+          this.loadUsers();
+        }
+        if (this.courses().length === 0) {
+          this.loadCourses();
+        }
+        break;
+      case 'enroll-module':
+        // Auto-load users and courses if not already loaded
+        if (this.users().length === 0) {
+          this.loadUsers();
+        }
+        if (this.courses().length === 0) {
+          this.loadCourses();
+        }
+        break;
     }
   }
 
@@ -473,7 +498,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  enrollInCourse(): void {
+  async enrollInCourse(): Promise<void> {
     if (!this.selectedUserId() || !this.selectedCourseId()) {
       this.snackbarService.show('Please select both user and course', 400);
       return;
@@ -487,16 +512,29 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    this.isLoadingEnrollmentData.set(true);
+
+    // Fetch student enrollment data to get academicYear, yearOfStudy, and semester
+    const enrollmentData = await this.fetchStudentEnrollmentData(studentId);
+    const params = this.getEnrollmentParams(enrollmentData);
+
     this.adminEnrollmentService.apiAdminStudentsStudentIdCourseEnrollmentPost(
       studentId,
-      {courseId: this.selectedCourseId()}
+      {
+        courseId: this.selectedCourseId(),
+        academicYear: params.academicYear,
+        yearOfStudy: params.yearOfStudy,
+        semester: params.semester
+      }
     ).subscribe({
       next: (response) => {
+        this.isLoadingEnrollmentData.set(false);
         this.snackbarService.showFromApiResponse(response);
         this.selectedUserId.set('');
         this.selectedCourseId.set('');
       },
       error: (err) => {
+        this.isLoadingEnrollmentData.set(false);
         const errorCode = err?.error?.errorCode || err?.error?.code || 'ERROR';
         const errorMessage = err?.error?.message || 'Failed to enroll user in course';
         this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
@@ -504,7 +542,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  enrollInModule(): void {
+  async enrollInModule(): Promise<void> {
     if (!this.selectedUserId() || !this.selectedModuleId()) {
       this.snackbarService.show('Please select both user and module', 400);
       return;
@@ -518,17 +556,29 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    this.isLoadingEnrollmentData.set(true);
+
+    // Fetch student enrollment data to get academicYear, yearOfStudy, and semester
+    const enrollmentData = await this.fetchStudentEnrollmentData(studentId);
+    const params = this.getEnrollmentParams(enrollmentData);
+
     this.adminEnrollmentService.apiAdminStudentsStudentIdModulesModuleIdEnrollPost(
       studentId,
       this.selectedModuleId(),
-      {}
+      {
+        academicYear: params.academicYear,
+        yearOfStudy: params.yearOfStudy,
+        semester: params.semester
+      }
     ).subscribe({
       next: (response) => {
+        this.isLoadingEnrollmentData.set(false);
         this.snackbarService.showFromApiResponse(response);
         this.selectedUserId.set('');
         this.selectedModuleId.set('');
       },
       error: (err) => {
+        this.isLoadingEnrollmentData.set(false);
         const errorCode = err?.error?.errorCode || err?.error?.code || 'ERROR';
         const errorMessage = err?.error?.message || 'Failed to enroll user in module';
         this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
@@ -1394,6 +1444,59 @@ export class AdminDashboardComponent implements OnInit {
     return this.getSelectedStudentIds().length > 0 && !!this.selectedModuleId();
   }
 
+  /**
+   * Fetch student enrollment data to get academicYear, yearOfStudy, and semester
+   */
+  fetchStudentEnrollmentData(studentId: string): Promise<StudentEnrollmentHistoryDto | null> {
+    // Check cache first
+    const cached = this.studentEnrollmentDataCache().get(studentId);
+    if (cached) {
+      return Promise.resolve(cached);
+    }
+
+    // Fetch from API
+    return new Promise((resolve) => {
+      this.enrollmentQueriesService.apiAdminEnrollmentsStudentsStudentIdHistoryGet(studentId).subscribe({
+        next: (response) => {
+          const data = response.data || null;
+          if (data) {
+            // Update cache
+            const newCache = new Map(this.studentEnrollmentDataCache());
+            newCache.set(studentId, data);
+            this.studentEnrollmentDataCache.set(newCache);
+          }
+          resolve(data);
+        },
+        error: () => {
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  /**
+   * Get enrollment parameters from student's current course enrollment
+   */
+  getEnrollmentParams(enrollmentData: StudentEnrollmentHistoryDto | null): { academicYear: number; yearOfStudy: number; semester: number } {
+    // Try to get from current course enrollment
+    const currentCourse = enrollmentData?.courses?.find(c => c.status === 1); // Active status
+
+    if (currentCourse) {
+      return {
+        academicYear: currentCourse.academicYear || new Date().getFullYear(),
+        yearOfStudy: currentCourse.yearOfStudy || 1,
+        semester: currentCourse.semester || 1
+      };
+    }
+
+    // Fallback to defaults
+    return {
+      academicYear: new Date().getFullYear(),
+      yearOfStudy: 1,
+      semester: 1
+    };
+  }
+
   enrollStudentsInCourse(): void {
     const studentIds = this.getSelectedStudentIds();
     const courseId = this.selectedCourseId();
@@ -1403,29 +1506,44 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    this.isLoadingEnrollmentData.set(true);
     let successCount = 0;
     let errorCount = 0;
     const totalStudents = studentIds.length;
+    let processedCount = 0;
 
-    studentIds.forEach((userId, index) => {
+    studentIds.forEach(async (userId) => {
       const user = this.users().find(u => u.id === userId);
       const studentId = user?.student?.id;
 
       if (!studentId) {
         errorCount++;
-        if (index === totalStudents - 1) {
+        processedCount++;
+        if (processedCount === totalStudents) {
+          this.isLoadingEnrollmentData.set(false);
           this.snackbarService.show(`${successCount} succeeded, ${errorCount} failed (missing student ID)`, 400);
         }
         return;
       }
 
+      // Fetch student enrollment data to get academicYear, yearOfStudy, and semester
+      const enrollmentData = await this.fetchStudentEnrollmentData(studentId);
+      const params = this.getEnrollmentParams(enrollmentData);
+
       this.adminEnrollmentService.apiAdminStudentsStudentIdCourseEnrollmentPost(
         studentId,
-        { courseId }
+        {
+          courseId,
+          academicYear: params.academicYear,
+          yearOfStudy: params.yearOfStudy,
+          semester: params.semester
+        }
       ).subscribe({
         next: (response: any) => {
           successCount++;
-          if (index === totalStudents - 1) {
+          processedCount++;
+          if (processedCount === totalStudents) {
+            this.isLoadingEnrollmentData.set(false);
             this.snackbarService.show(`Successfully enrolled ${successCount} student(s)`, 200);
             this.selectedStudentIds.set(new Set());
             this.selectedCourseId.set('');
@@ -1433,12 +1551,17 @@ export class AdminDashboardComponent implements OnInit {
         },
         error: (err: any) => {
           errorCount++;
+          processedCount++;
           const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
           const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to enroll student';
-          this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
 
-          if (index === totalStudents - 1 && successCount > 0) {
-            this.snackbarService.show(`${successCount} succeeded, ${errorCount} failed`, 400);
+          if (processedCount === totalStudents) {
+            this.isLoadingEnrollmentData.set(false);
+            if (successCount > 0) {
+              this.snackbarService.show(`${successCount} succeeded, ${errorCount} failed`, 400);
+            } else {
+              this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
+            }
           }
         }
       });
@@ -1454,30 +1577,44 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    this.isLoadingEnrollmentData.set(true);
     let successCount = 0;
     let errorCount = 0;
     const totalStudents = studentIds.length;
+    let processedCount = 0;
 
-    studentIds.forEach((userId, index) => {
+    studentIds.forEach(async (userId) => {
       const user = this.users().find(u => u.id === userId);
       const studentId = user?.student?.id;
 
       if (!studentId) {
         errorCount++;
-        if (index === totalStudents - 1) {
+        processedCount++;
+        if (processedCount === totalStudents) {
+          this.isLoadingEnrollmentData.set(false);
           this.snackbarService.show(`${successCount} succeeded, ${errorCount} failed (missing student ID)`, 400);
         }
         return;
       }
 
+      // Fetch student enrollment data to get academicYear, yearOfStudy, and semester
+      const enrollmentData = await this.fetchStudentEnrollmentData(studentId);
+      const params = this.getEnrollmentParams(enrollmentData);
+
       this.adminEnrollmentService.apiAdminStudentsStudentIdModulesModuleIdEnrollPost(
         studentId,
         moduleId,
-        {}
+        {
+          academicYear: params.academicYear,
+          yearOfStudy: params.yearOfStudy,
+          semester: params.semester
+        }
       ).subscribe({
         next: (response: any) => {
           successCount++;
-          if (index === totalStudents - 1) {
+          processedCount++;
+          if (processedCount === totalStudents) {
+            this.isLoadingEnrollmentData.set(false);
             this.snackbarService.show(`Successfully enrolled ${successCount} student(s)`, 200);
             this.selectedStudentIds.set(new Set());
             this.selectedModuleId.set('');
@@ -1485,12 +1622,17 @@ export class AdminDashboardComponent implements OnInit {
         },
         error: (err: any) => {
           errorCount++;
+          processedCount++;
           const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
           const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to enroll student';
-          this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
 
-          if (index === totalStudents - 1 && successCount > 0) {
-            this.snackbarService.show(`${successCount} succeeded, ${errorCount} failed`, 400);
+          if (processedCount === totalStudents) {
+            this.isLoadingEnrollmentData.set(false);
+            if (successCount > 0) {
+              this.snackbarService.show(`${successCount} succeeded, ${errorCount} failed`, 400);
+            } else {
+              this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
+            }
           }
         }
       });
@@ -1535,6 +1677,57 @@ export class AdminDashboardComponent implements OnInit {
 
   closeEnrollmentDetails(): void {
     this.showEnrollmentDetails.set(false);
+  }
+
+  handleEnrollStudents(data: { mode: 'course' | 'module', id: string }): void {
+    if (data.mode === 'course') {
+      this.selectedCourseId.set(data.id);
+      this.currentView.set('enroll-course');
+    } else {
+      const course = this.modules().find(m => m.id === data.id)?.courseId;
+      if (course) {
+        this.selectedCourseId.set(course);
+      }
+      this.selectedModuleId.set(data.id);
+      this.currentView.set('enroll-module');
+    }
+    this.closeEnrollmentDetails();
+  }
+
+  handleCancelEnrollment(data: { enrollmentId: string, type: 'course' | 'module' }): void {
+    const confirmMessage = `Are you sure you want to cancel this ${data.type} enrollment?`;
+
+    if (confirm(confirmMessage)) {
+      if (data.type === 'course') {
+        this.snackbarService.show('Course enrollment cancellation not yet implemented in backend', 400);
+      } else {
+        this.adminEnrollmentService.apiAdminModuleEnrollmentsEnrollmentIdDelete(data.enrollmentId).subscribe({
+          next: (response) => {
+            this.snackbarService.showFromApiResponse(response);
+            if (this.showEnrollmentDetails()) {
+              const mode = this.enrollmentDetailsMode();
+              const id = this.enrollmentDetailsEntityId();
+              this.closeEnrollmentDetails();
+              setTimeout(() => {
+                if (mode === 'module') {
+                  this.viewModuleEnrollments(id);
+                } else if (mode === 'user') {
+                  const user = this.users().find(u => u.student?.id === id);
+                  if (user?.id) {
+                    this.viewUserEnrollments(user.id);
+                  }
+                }
+              }, 100);
+            }
+          },
+          error: (err) => {
+            const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
+            const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to cancel module enrollment';
+            this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
+          }
+        });
+      }
+    }
   }
 
   getStudentsWithStudentProfile(): AdminUserListItemDto[] {

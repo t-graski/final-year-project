@@ -1,12 +1,18 @@
-﻿using backend.models;
+﻿using System.Text.Json;
+using backend.models;
 using backend.models.@base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace backend.data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    public Guid? ActorUserId { get; set; }
+    public string? CorrelationId { get; set; }
+    public string? RequestPath { get; set; }
+
     public DbSet<User> Users => Set<User>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<Student> Students => Set<Student>();
@@ -127,6 +133,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.ToTable("audit_events");
             e.HasKey(x => x.AuditEventId);
+
+            e.Property(x => x.Action).IsRequired().HasMaxLength(32);
+            e.Property(x => x.EntityType).IsRequired().HasMaxLength(128);
+            e.Property(x => x.EntityTable).IsRequired().HasMaxLength(128);
+            e.Property(x => x.EntityId).IsRequired().HasMaxLength(256);
+
+            e.Property(x => x.ChangesJson).HasColumnType("jsonb");
+            e.Property(x => x.MetadataJson).HasColumnType("jsonb");
+
+            e.HasIndex(x => x.OccuredAtUtc);
+            e.HasIndex(x => new { x.EntityType, x.EntityId });
+            e.HasIndex(x => x.ActorUserId);
+
+            e.HasOne(x => x.ActorUser)
+                .WithMany()
+                .HasForeignKey(x => x.ActorUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // --- STUDENT COURSE ENROLLMENTS ---
@@ -186,7 +209,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         });
     }
 
-    public Guid? ActorUserId { get; set; }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {
@@ -224,7 +246,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             }
         }
 
-        var auditEvents = BuildAuditEvents(now);
+        var auditEvents = BuildAuditEvents(now, RequestPath, CorrelationId);
 
         var result = await base.SaveChangesAsync(cancellationToken);
 
@@ -237,7 +259,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         return result;
     }
 
-    private List<AuditEvent> BuildAuditEvents(DateTimeOffset now)
+    private static readonly HashSet<string> SensitiveProps = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "PasswordHash",
+        "RefreshToken",
+        "AccessToken",
+        "Token",
+        "Secret"
+    };
+
+    private List<AuditEvent> BuildAuditEvents(DateTimeOffset now, string? requestPath = null,
+        string? correlationId = null)
     {
         var list = new List<AuditEvent>();
 
@@ -245,6 +277,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             if (entry.Entity is AuditEvent) continue;
             if (entry.State is EntityState.Unchanged or EntityState.Detached) continue;
+
+            if (entry.Metadata.IsOwned()) continue;
 
             var action = entry.State switch
             {
@@ -254,17 +288,75 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 _ => entry.State.ToString().ToUpperInvariant()
             };
 
+            var entityType = entry.Metadata.ClrType.Name;
+            var table = entry.Metadata.GetTableName() ?? entityType;
+
+            var keyString = GetPrimaryKeyString(entry);
+            var changes = new Dictionary<string, AuditFieldChange>();
+
+            if (entry.State == EntityState.Added)
+            {
+                foreach (var prop in entry.Properties)
+                {
+                    if (ShouldSkipProperty(prop.Metadata)) continue;
+
+                    changes[prop.Metadata.Name] = new AuditFieldChange(null, prop.CurrentValue);
+                }
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                foreach (var prop in entry.Properties)
+                {
+                    if (!prop.IsModified) continue;
+                    if (ShouldSkipProperty(prop.Metadata)) continue;
+
+                    changes[prop.Metadata.Name] = new AuditFieldChange(prop.OriginalValue, prop.CurrentValue);
+                }
+            }
+            else if (entry.State == EntityState.Deleted)
+            {
+                foreach (var prop in entry.Properties)
+                {
+                    if (ShouldSkipProperty(prop.Metadata)) continue;
+
+                    changes[prop.Metadata.Name] = new AuditFieldChange(prop.OriginalValue, null);
+                }
+            }
+
+            if (changes.Count == 0) continue;
+
+            var payload = new AuditChanges(changes);
+            var metadata = new Dictionary<string, object>
+            {
+                ["path"] = requestPath,
+                ["correlationId"] = correlationId
+            };
+
             list.Add(new AuditEvent
             {
-                OccuredAt = now,
+                OccuredAtUtc = now,
                 ActorUserId = ActorUserId,
                 Action = action,
-                EntityType = entry.Metadata.ClrType.Name,
-                EntityId = GetPrimaryKeyString(entry)
+                EntityType = entityType,
+                EntityTable = table,
+                EntityId = keyString,
+                ChangesJson = JsonSerializer.Serialize(payload),
+                MetadataJson = JsonSerializer.Serialize(metadata)
             });
         }
 
         return list;
+    }
+
+    private static bool ShouldSkipProperty(IProperty prop)
+    {
+        if (prop.IsPrimaryKey()) return true;
+
+        var name = prop.Name;
+        if (SensitiveProps.Contains(name)) return true;
+
+        return name is "CreatedAtUtc" or "CreatedByUserId" or "UpdatedAtUtc" or "UpdatedByUserId" or "DeletedAtUtc"
+            or "DeletedByUserId" or "IsDeleted";
     }
 
     private static bool IsSoftDelete(EntityEntry entry)
@@ -277,7 +369,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     private static string GetPrimaryKeyString(EntityEntry entry)
     {
         var pk = entry.Metadata.FindPrimaryKey();
-        if (pk is null) return "UNKNOWN";
+        if (pk is null) return "UNKNOWN_KEY";
         var parts = pk.Properties.Select(p => $"{p.Name}={entry.Property(p.Name).CurrentValue}");
         return string.Join(";", parts);
     }

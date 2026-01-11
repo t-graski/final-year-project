@@ -2,6 +2,7 @@
 README.md
 api.base.service.ts
 api.module.ts
+api/adminAudit.service.ts
 api/adminCatalog.service.ts
 api/adminEnrollment.service.ts
 api/adminUser.service.ts
@@ -30,6 +31,8 @@ model/adminUserListItemDto.ts
 model/adminUserListItemDtoIReadOnlyListApiResponse.ts
 model/apiError.ts
 model/assignRoleDto.ts
+model/auditEventDto.ts
+model/auditEventDtoIReadOnlyListApiResponse.ts
 model/authResultDto.ts
 model/authResultDtoApiResponse.ts
 model/courseEnrollmentDto.ts

@@ -93,6 +93,7 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IAdminCatalogService, AdminCatalogService>();
 builder.Services.AddScoped<IAdminEnrollmentService, AdminEnrollmentService>();
 builder.Services.AddScoped<IEnrollmentQueryService, EnrollmentQueryService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
 
 builder.Services.AddHttpContextAccessor();
 

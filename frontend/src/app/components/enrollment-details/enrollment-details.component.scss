@@ -49,6 +49,41 @@
     }
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .enroll-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    font-weight: 500;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    span {
+      font-size: 0.95rem;
+    }
+  }
+
   .close-btn {
     background: rgba(255, 255, 255, 0.2);
     border: none;
@@ -346,5 +381,53 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.context-menu {
+  position: fixed;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  padding: 0.5rem 0;
+  min-width: 200px;
+  z-index: 1100;
+  border: 1px solid #e2e8f0;
+
+  .context-menu-item {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 0.9rem;
+    color: #334155;
+    text-align: left;
+
+    &:hover {
+      background: #f1f5f9;
+    }
+
+    &.context-menu-item--danger {
+      color: #dc2626;
+
+      &:hover {
+        background: #fee2e2;
+      }
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+tbody tr {
+  cursor: context-menu;
 }
 

@@ -15,7 +15,7 @@ public class AdminEnrollmentController(IAdminEnrollmentService enrollment) : Con
     [Authorize]
     [RequirePermission(Permission.ManageStudents)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> EnrolCourse(Guid studentId, EnrollInCourseDto dto)
+    public async Task<IActionResult> EnrollCourse(Guid studentId, EnrollInCourseDto dto)
     {
         await enrollment.EnrollStudentInCourseAsync(studentId, dto);
         return StatusCode(201, ApiResponse<object>.Ok(new { }, 201));
