@@ -84,7 +84,7 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
             throw new AppException(409, "EMAIL_EXISTS", "Email already exists.");
         }
 
-        if (dto.SystemRole.HasValue && !Enum.IsDefined(typeof(SystemRole), dto.SystemRole.Value))
+        if (dto.Role.HasValue && !Enum.IsDefined(dto.Role.Value))
         {
             throw new AppException(400, "INVALID_ROLE", "Invalid system role specified.");
         }
@@ -101,14 +101,39 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
 
         db.Users.Add(user);
 
-        if (dto.SystemRole.HasValue)
+        if (dto.Role.HasValue)
         {
             var userRole = new UserRole
             {
                 UserId = user.Id,
-                Role = (SystemRole)dto.SystemRole.Value
+                Role = dto.Role.Value
             };
-            db.Set<UserRole>().Add(userRole);
+
+            db.UserRoles.Add(userRole);
+        }
+
+        switch (dto.Role)
+        {
+            case SystemRole.Student:
+                var student = new Student
+                {
+                    UserId = user.Id,
+                    StudentNumber = await GenerateStudentNumber()
+                };
+
+                db.Students.Add(student);
+                break;
+            case SystemRole.Staff:
+            case SystemRole.Admin:
+                var staff = new Staff
+                {
+                    UserId = user.Id,
+                    StaffNumber = await GenerateStaffNumber(),
+                    Department = "Unassigned"
+                };
+
+                db.Staff.Add(staff);
+                break;
         }
 
         await db.SaveChangesAsync();
@@ -165,5 +190,35 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
 
         user.Permissions = (long)UserService.ComputePermissionsFromRoles(user);
         await db.SaveChangesAsync();
+    }
+
+    private async Task<string> GenerateStudentNumber()
+    {
+        var lastStudent = await db.Students
+            .OrderByDescending(s => s.StudentNumber)
+            .FirstOrDefaultAsync();
+
+        if (lastStudent == null)
+        {
+            return "w1000001";
+        }
+
+        var lastNumber = int.Parse(lastStudent.StudentNumber[1..]);
+        return $"w{lastNumber}";
+    }
+
+    private async Task<string> GenerateStaffNumber()
+    {
+        var lastStaff = await db.Staff
+            .OrderByDescending(s => s.StaffNumber)
+            .FirstOrDefaultAsync();
+
+        if (lastStaff == null)
+        {
+            return "s1001";
+        }
+
+        var lastNumber = int.Parse(lastStaff.StaffNumber[1..]);
+        return $"s{lastNumber}";
     }
 }

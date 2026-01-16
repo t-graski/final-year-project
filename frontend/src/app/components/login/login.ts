@@ -5,10 +5,11 @@ import {AppAuthService} from '../../api/auth/app-auth.service';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {finalize, switchMap} from 'rxjs/operators'
 import {UserService} from '../../services/user.service';
+import {CommonModule} from '@angular/common';
 
 @Component({
   selector: 'app-login',
-  imports: [MatIconModule, ReactiveFormsModule],
+  imports: [CommonModule, MatIconModule, ReactiveFormsModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -20,8 +21,6 @@ export class Login {
   private readonly userService = inject(UserService);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  activeTab: 'login' | 'register' = 'login';
-
   isSubmitting = false;
   errorMessage: string | null = null;
 
@@ -31,10 +30,6 @@ export class Login {
     rememberMe: [true]
   });
 
-  switchTab(tab: 'login' | 'register') {
-    this.activeTab = tab;
-    this.errorMessage = null;
-  }
 
   signIn(): void {
     if (this.loginForm.invalid || this.isSubmitting) return;

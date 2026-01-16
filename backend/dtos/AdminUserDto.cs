@@ -1,4 +1,7 @@
-﻿namespace backend.dtos;
+﻿using backend.auth;
+using backend.models.@base;
+
+namespace backend.dtos;
 
 public record AdminUserListItemDto(
     Guid Id,
@@ -36,7 +39,7 @@ public record AdminCreateUserDto(
     string FirstName,
     string LastName,
     bool IsActive,
-    short? SystemRole
+    SystemRole? Role
 );
 
 public record AdminUpdateUserDto(

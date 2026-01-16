@@ -26,12 +26,48 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         var user = new User
         {
             Email = email,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            DateOfBirth = dto.DateOfBirth,
             PasswordHash = hash,
             IsActive = true,
-            Permissions = (long)Permission.None
+            Permissions = (long)RolePermissions.ForRole(dto.Role)
         };
 
         db.Users.Add(user);
+
+        var userRole = new UserRole
+        {
+            UserId = user.Id,
+            Role = dto.Role
+        };
+
+        db.UserRoles.Add(userRole);
+
+        switch (dto.Role)
+        {
+            case SystemRole.Student:
+                var student = new Student
+                {
+                    UserId = user.Id,
+                    StudentNumber = await GenerateStudentNumber()
+                };
+
+                db.Students.Add(student);
+                break;
+            case SystemRole.Staff:
+            case SystemRole.Admin:
+                var staff = new Staff
+                {
+                    UserId = user.Id,
+                    StaffNumber = await GenerateStaffNumber(),
+                    Department = "Unassigned"
+                };
+
+                db.Staff.Add(staff);
+                break;
+        }
+
         await db.SaveChangesAsync();
 
         var token = tokens.CreateAccessToken(user);
@@ -389,5 +425,35 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         }
 
         return perms;
+    }
+
+    private async Task<string> GenerateStudentNumber()
+    {
+        var lastStudent = await db.Students
+            .OrderByDescending(s => s.StudentNumber)
+            .FirstOrDefaultAsync();
+
+        if (lastStudent == null)
+        {
+            return "w1000001";
+        }
+
+        var lastNumber = int.Parse(lastStudent.StudentNumber[1..]);
+        return $"w{lastNumber}";
+    }
+
+    private async Task<string> GenerateStaffNumber()
+    {
+        var lastStaff = await db.Staff
+            .OrderByDescending(s => s.StaffNumber)
+            .FirstOrDefaultAsync();
+
+        if (lastStaff == null)
+        {
+            return "s1001";
+        }
+
+        var lastNumber = int.Parse(lastStaff.StaffNumber[1..]);
+        return $"s{lastNumber}";
     }
 }

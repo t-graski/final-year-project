@@ -770,10 +770,10 @@
           <div class="form-group">
             <label for="create-role">Role</label>
             <select id="create-role" class="form-control" [(ngModel)]="newUser().systemRole">
-              <option [value]="null">-- No Role --</option>
-              <option [value]="1">Student</option>
-              <option [value]="2">Staff</option>
-              <option [value]="3">Admin</option>
+              <option [ngValue]="null">-- No Role --</option>
+              <option [ngValue]="1">Student</option>
+              <option [ngValue]="2">Staff</option>
+              <option [ngValue]="3">Admin</option>
             </select>
           </div>
           <div class="form-group">

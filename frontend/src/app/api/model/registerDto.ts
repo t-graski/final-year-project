@@ -7,10 +7,18 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { SystemRole } from './systemRole';
 
 
 export interface RegisterDto { 
     email?: string | null;
     password?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    dateOfBirth?: string;
+    role?: SystemRole;
 }
+export namespace RegisterDto {
+}
+
 

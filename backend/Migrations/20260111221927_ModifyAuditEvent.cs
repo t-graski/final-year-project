@@ -44,14 +44,25 @@ namespace backend.Migrations
                 oldClrType: typeof(string),
                 oldType: "text");
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "AuditEventId",
-                table: "audit_events",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(long),
-                oldType: "bigint")
-                .OldAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+            // ---- Fix AuditEventId: bigint identity -> uuid ----
+// 1) Drop identity first (Postgres requires this)
+            migrationBuilder.Sql("""ALTER TABLE audit_events ALTER COLUMN "AuditEventId" DROP IDENTITY IF EXISTS;""");
+
+// 2) UUID generator
+            migrationBuilder.Sql("""CREATE EXTENSION IF NOT EXISTS "pgcrypto";""");
+
+// 3) Convert type (dev-safe: new UUIDs for existing rows)
+            migrationBuilder.Sql("""
+                                     ALTER TABLE audit_events
+                                     ALTER COLUMN "AuditEventId" TYPE uuid
+                                     USING gen_random_uuid();
+                                 """);
+
+// 4) Default for new rows
+            migrationBuilder.Sql("""
+                                     ALTER TABLE audit_events
+                                     ALTER COLUMN "AuditEventId" SET DEFAULT gen_random_uuid();
+                                 """);
 
             migrationBuilder.AddColumn<string>(
                 name: "ChangesJson",

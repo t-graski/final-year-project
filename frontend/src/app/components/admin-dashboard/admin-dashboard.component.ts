@@ -18,6 +18,7 @@ import {StudentEnrollmentHistoryDto} from '../../api/model/studentEnrollmentHist
 import {AuditEventDto} from '../../api/model/auditEventDto';
 import {DynamicTableComponent, TableColumn, TableAction} from '../dynamic-table/dynamic-table.component';
 import {EnrollmentDetailsComponent} from '../enrollment-details/enrollment-details.component';
+import {SystemRole} from '../../api';
 
 type AdminView = 'users' | 'courses' | 'modules' | 'enroll-course' | 'enroll-module' | 'audit';
 type EnrollmentMode = 'user' | 'course' | 'module';
@@ -49,7 +50,7 @@ export class AdminDashboardComponent implements OnInit {
   modules = signal<AdminModuleDto[]>([]);
 
   userColumns: TableColumn<AdminUserListItemDto>[] = [
-    { key: 'id', label: 'ID', visible: false, cellClass: 'cell-id' },
+    {key: 'id', label: 'ID', visible: false, cellClass: 'cell-id'},
     {
       key: 'name',
       label: 'Name',
@@ -57,7 +58,7 @@ export class AdminDashboardComponent implements OnInit {
       visible: true,
       render: (user) => `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'No name'
     },
-    { key: 'email', label: 'Email', sortable: true, visible: true },
+    {key: 'email', label: 'Email', sortable: true, visible: true},
     {
       key: 'roles',
       label: 'Roles',
@@ -75,12 +76,12 @@ export class AdminDashboardComponent implements OnInit {
   ];
 
   courseColumns: TableColumn<AdminCourseDto>[] = [
-    { key: 'id', label: 'ID', visible: false, cellClass: 'cell-id' },
-    { key: 'courseCode', label: 'Code', sortable: true, visible: true },
-    { key: 'title', label: 'Title', sortable: true, visible: true },
-    { key: 'description', label: 'Description', visible: true, cellClass: 'cell-description' },
-    { key: 'award', label: 'Award', visible: true },
-    { key: 'durationSemesters', label: 'Duration', visible: true },
+    {key: 'id', label: 'ID', visible: false, cellClass: 'cell-id'},
+    {key: 'courseCode', label: 'Code', sortable: true, visible: true},
+    {key: 'title', label: 'Title', sortable: true, visible: true},
+    {key: 'description', label: 'Description', visible: true, cellClass: 'cell-description'},
+    {key: 'award', label: 'Award', visible: true},
+    {key: 'durationSemesters', label: 'Duration', visible: true},
     {
       key: 'isActive',
       label: 'Status',
@@ -90,49 +91,61 @@ export class AdminDashboardComponent implements OnInit {
   ];
 
   moduleColumns: TableColumn<AdminModuleDto>[] = [
-    { key: 'id', label: 'ID', visible: false, cellClass: 'cell-id' },
-    { key: 'moduleCode', label: 'Code', sortable: true, visible: true },
-    { key: 'title', label: 'Title', sortable: true, visible: true },
-    { key: 'description', label: 'Description', visible: true, cellClass: 'cell-description' },
-    { key: 'credits', label: 'Credits', visible: true },
-    { key: 'level', label: 'Level', visible: true },
-    { key: 'semesterOfStudy', label: 'Semester', visible: true },
-    { key: 'term', label: 'Term', visible: true }
+    {key: 'id', label: 'ID', visible: false, cellClass: 'cell-id'},
+    {key: 'moduleCode', label: 'Code', sortable: true, visible: true},
+    {key: 'title', label: 'Title', sortable: true, visible: true},
+    {key: 'description', label: 'Description', visible: true, cellClass: 'cell-description'},
+    {key: 'credits', label: 'Credits', visible: true},
+    {key: 'level', label: 'Level', visible: true},
+    {key: 'semesterOfStudy', label: 'Semester', visible: true},
+    {key: 'term', label: 'Term', visible: true}
   ];
 
   userActions: TableAction<AdminUserListItemDto>[] = [
-    { icon: 'visibility', label: 'View Details', handler: (user) => this.viewUserDetails(user.id!) },
-    { icon: 'school', label: 'View Enrollments', handler: (user) => this.viewUserEnrollments(user.id!) },
-    { icon: 'edit', label: 'Edit User', handler: (user) => this.snackbarService.show('Edit user (pending)', 400) },
-    { icon: 'lock_reset', label: 'Reset Password', handler: (user) => this.resetUserPassword(user.id!) },
+    {icon: 'visibility', label: 'View Details', handler: (user) => this.viewUserDetails(user.id!)},
+    {icon: 'school', label: 'View Enrollments', handler: (user) => this.viewUserEnrollments(user.id!)},
+    {icon: 'edit', label: 'Edit User', handler: (user) => this.snackbarService.show('Edit user (pending)', 400)},
+    {icon: 'lock_reset', label: 'Reset Password', handler: (user) => this.resetUserPassword(user.id!)},
     {
       icon: 'block',
       label: 'Toggle Status',
       handler: (user) => this.toggleUserStatus(user.id!, user.isActive ?? false)
     },
-    { divider: true, icon: '', label: '', handler: () => {} },
-    { icon: 'admin_panel_settings', label: 'Assign Role', handler: (user) => this.assignRole(user.id!, 1) },
-    { icon: 'person', label: 'Impersonate User', handler: (user) => this.impersonateUser(user.id!) },
-    { divider: true, icon: '', label: '', handler: () => {} },
-    { icon: 'delete', label: 'Delete User', danger: true, handler: (user) => this.deleteUser(user.id!) }
+    {
+      divider: true, icon: '', label: '', handler: () => {
+      }
+    },
+    {icon: 'admin_panel_settings', label: 'Assign Role', handler: (user) => this.assignRole(user.id!, 1)},
+    {icon: 'person', label: 'Impersonate User', handler: (user) => this.impersonateUser(user.id!)},
+    {
+      divider: true, icon: '', label: '', handler: () => {
+      }
+    },
+    {icon: 'delete', label: 'Delete User', danger: true, handler: (user) => this.deleteUser(user.id!)}
   ];
 
   courseActions: TableAction<AdminCourseDto>[] = [
-    { icon: 'visibility', label: 'View Details', handler: (course) => this.showCourseDetails.set(course.id!) },
-    { icon: 'people', label: 'View Enrolled Students', handler: (course) => this.viewCourseEnrollments(course.id!) },
-    { icon: 'edit', label: 'Edit Course', handler: (course) => this.editCourse(course) },
-    { icon: 'content_copy', label: 'Clone Course', handler: (course) => this.cloneCourse(course) },
-    { divider: true, icon: '', label: '', handler: () => {} },
-    { icon: 'delete', label: 'Delete Course', danger: true, handler: (course) => this.deleteCourse(course.id!) }
+    {icon: 'visibility', label: 'View Details', handler: (course) => this.showCourseDetails.set(course.id!)},
+    {icon: 'people', label: 'View Enrolled Students', handler: (course) => this.viewCourseEnrollments(course.id!)},
+    {icon: 'edit', label: 'Edit Course', handler: (course) => this.editCourse(course)},
+    {icon: 'content_copy', label: 'Clone Course', handler: (course) => this.cloneCourse(course)},
+    {
+      divider: true, icon: '', label: '', handler: () => {
+      }
+    },
+    {icon: 'delete', label: 'Delete Course', danger: true, handler: (course) => this.deleteCourse(course.id!)}
   ];
 
   moduleActions: TableAction<AdminModuleDto>[] = [
-    { icon: 'visibility', label: 'View Details', handler: (module) => this.showModuleDetails.set(module.id!) },
-    { icon: 'people', label: 'View Enrolled Students', handler: (module) => this.viewModuleEnrollments(module.id!) },
-    { icon: 'edit', label: 'Edit Module', handler: (module) => this.editModule(module) },
-    { icon: 'content_copy', label: 'Clone Module', handler: (module) => this.cloneModule(module) },
-    { divider: true, icon: '', label: '', handler: () => {} },
-    { icon: 'delete', label: 'Delete Module', danger: true, handler: (module) => this.deleteModule(module.id!) }
+    {icon: 'visibility', label: 'View Details', handler: (module) => this.showModuleDetails.set(module.id!)},
+    {icon: 'people', label: 'View Enrolled Students', handler: (module) => this.viewModuleEnrollments(module.id!)},
+    {icon: 'edit', label: 'Edit Module', handler: (module) => this.editModule(module)},
+    {icon: 'content_copy', label: 'Clone Module', handler: (module) => this.cloneModule(module)},
+    {
+      divider: true, icon: '', label: '', handler: () => {
+      }
+    },
+    {icon: 'delete', label: 'Delete Module', danger: true, handler: (module) => this.deleteModule(module.id!)}
   ];
 
   selectedUserId = signal<string>('');
@@ -275,10 +288,10 @@ export class AdminDashboardComponent implements OnInit {
       filtered = filtered.filter(user => {
         const fullName = `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase();
         return user.email?.toLowerCase().includes(query) ||
-               user.firstName?.toLowerCase().includes(query) ||
-               user.lastName?.toLowerCase().includes(query) ||
-               fullName.includes(query) ||
-               this.getRoleName(user.roles).toLowerCase().includes(query);
+          user.firstName?.toLowerCase().includes(query) ||
+          user.lastName?.toLowerCase().includes(query) ||
+          fullName.includes(query) ||
+          this.getRoleName(user.roles).toLowerCase().includes(query);
       });
     }
 
@@ -398,8 +411,8 @@ export class AdminDashboardComponent implements OnInit {
     localStorage.setItem('adminDashboard_currentView', view);
 
     if ((previousView === 'enroll-course' || previousView === 'enroll-module') &&
-        (view === 'enroll-course' || view === 'enroll-module') &&
-        previousView !== view) {
+      (view === 'enroll-course' || view === 'enroll-module') &&
+      previousView !== view) {
       this.resetEnrollmentSelection();
     }
 
@@ -604,10 +617,14 @@ export class AdminDashboardComponent implements OnInit {
     const actionUpper = action.toUpperCase();
 
     switch (actionUpper) {
-      case 'INSERT': return 'add_circle';
-      case 'UPDATE': return 'edit';
-      case 'SOFT_DELETE': return 'delete_outline';
-      case 'HARD_DELETE': return 'delete_forever';
+      case 'INSERT':
+        return 'add_circle';
+      case 'UPDATE':
+        return 'edit';
+      case 'SOFT_DELETE':
+        return 'delete_outline';
+      case 'HARD_DELETE':
+        return 'delete_forever';
       default:
         // Fallback for other actions
         const actionLower = action.toLowerCase();
@@ -628,10 +645,14 @@ export class AdminDashboardComponent implements OnInit {
     const actionUpper = action.toUpperCase();
 
     switch (actionUpper) {
-      case 'INSERT': return 'action-insert';
-      case 'UPDATE': return 'action-update';
-      case 'SOFT_DELETE': return 'action-soft-delete';
-      case 'HARD_DELETE': return 'action-hard-delete';
+      case 'INSERT':
+        return 'action-insert';
+      case 'UPDATE':
+        return 'action-update';
+      case 'SOFT_DELETE':
+        return 'action-soft-delete';
+      case 'HARD_DELETE':
+        return 'action-hard-delete';
       default:
         // Fallback for other actions
         const actionLower = action.toLowerCase();
@@ -827,7 +848,7 @@ export class AdminDashboardComponent implements OnInit {
 
   createUser(): void {
     const user = this.newUser();
-    if (!user.email || !user.password || !user.firstName || !user.lastName) {
+    if (!user.email || !user.password || !user.firstName || !user.lastName || user.systemRole === null) {
       this.snackbarService.show('Please fill in all required fields', 400);
       return;
     }
@@ -838,7 +859,7 @@ export class AdminDashboardComponent implements OnInit {
       firstName: user.firstName,
       lastName: user.lastName,
       isActive: user.isActive,
-      systemRole: user.systemRole || undefined
+      role: user.systemRole as SystemRole
     }).subscribe({
       next: (response) => {
         this.snackbarService.showFromApiResponse(response);
@@ -1037,11 +1058,11 @@ export class AdminDashboardComponent implements OnInit {
         this.snackbarService.showFromApiResponse(response);
         this.loadUsers();
       },
-        error: (err) => {
-          const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
-          const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to update user status';
-          this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
-        }
+      error: (err) => {
+        const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
+        const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to update user status';
+        this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
+      }
     });
   }
 
@@ -1347,11 +1368,11 @@ export class AdminDashboardComponent implements OnInit {
         this.closeEditCourseModal();
         this.loadCourses();
       },
-          error: (err) => {
-            const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
-            const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to update course';
-            this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
-          }
+      error: (err) => {
+        const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
+        const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to update course';
+        this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
+      }
     });
   }
 
@@ -1376,11 +1397,11 @@ export class AdminDashboardComponent implements OnInit {
         this.closeEditModuleModal();
         this.loadModules();
       },
-          error: (err) => {
-            const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
-            const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to update module';
-            this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
-          }
+      error: (err) => {
+        const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
+        const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to update module';
+        this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
+      }
     });
   }
 
@@ -1638,7 +1659,11 @@ export class AdminDashboardComponent implements OnInit {
   /**
    * Get enrollment parameters from student's current course enrollment
    */
-  getEnrollmentParams(enrollmentData: StudentEnrollmentHistoryDto | null): { academicYear: number; yearOfStudy: number; semester: number } {
+  getEnrollmentParams(enrollmentData: StudentEnrollmentHistoryDto | null): {
+    academicYear: number;
+    yearOfStudy: number;
+    semester: number
+  } {
     // Try to get from current course enrollment
     const currentCourse = enrollmentData?.courses?.find(c => c.status === 1); // Active status
 
