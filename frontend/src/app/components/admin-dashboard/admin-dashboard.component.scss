@@ -537,6 +537,7 @@
     display: flex;
     justify-content: center;
     gap: 12px;
+    padding: 24px;
   }
 
   .checkbox-label {
@@ -1477,11 +1478,11 @@ textarea.form-control {
   text-align: center;
 }
 
-.enrollment-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-}
+//.enrollment-actions {
+//  display: flex;
+//  justify-content: center;
+//  gap: 12px;
+//}
 
 .btn-large {
   padding: 14px 32px;

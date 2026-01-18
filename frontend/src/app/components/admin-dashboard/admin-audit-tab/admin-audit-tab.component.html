@@ -97,7 +97,6 @@
     </div>
   </div>
 
-  <!-- Audit Events List -->
   @if ($isLoading()) {
     <div class="section-loading">
       <mat-icon fontIcon="refresh" class="spinning"></mat-icon>
@@ -126,7 +125,7 @@
               @if (event.actorUserId) {
                 <span class="audit-meta-tag">
                   <mat-icon fontIcon="person"></mat-icon>
-                  {{ event.actorUserId.substring(0, 8) }}...
+                  {{ event.actorUserId }}
                 </span>
               }
             </div>

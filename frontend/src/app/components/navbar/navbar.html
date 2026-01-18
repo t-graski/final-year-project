@@ -1,44 +1,47 @@
-<div class="wrapper" (click)="showUserDropdown.set(false)">
-  <div class="left-wrapper">
-    <div class="icon" (click)="navigateToDashboard()" title="Go to Dashboard">
+<div class="navbar-wrapper" (click)="$showUserDropdown.set(false)">
+  <div class="navbar-left">
+    <div class="navbar-icon" (click)="navigateToDashboard()" title="Go to Dashboard">
       <mat-icon aria-hidden="false" fontIcon="school"></mat-icon>
     </div>
-    <div class="title">
-      <h2>{{ title }}</h2>
-      <p>{{ subTitle }}</p>
+    <div class="navbar-title">
+      <h2>{{ $title() }}</h2>
+      <p>{{ $subTitle() }}</p>
     </div>
   </div>
-  <div class="right-wrapper">
-    @for (link of links; track link.label) {
-      <div class="navbar-link" (click)="navigateTo(link.path)">
-        @if (link.icon) {
-          <mat-icon aria-hidden="false" fontIcon="{{link.icon}}"></mat-icon>
-        }
-        <p>{{ link.label }}</p>
-      </div>
-    }
 
-    <div class="navbar-link" (click)="logout()">
-      <mat-icon aria-hidden="false" fontIcon="logout"></mat-icon>
-      <p>Logout</p>
+  <div class="navbar-right">
+    <div class="navbar-tabs">
+      @for (link of $links(); track link.label) {
+        <button class="navbar-tab" (click)="navigateTo(link.path)" [title]="link.label">
+          @if (link.icon) {
+            <mat-icon aria-hidden="false" fontIcon="{{link.icon}}"></mat-icon>
+          }
+          <span>{{ link.label }}</span>
+        </button>
+      }
     </div>
 
-    @if (userName || userEmail) {
+    <button class="navbar-logout" (click)="logout()" title="Logout">
+      <mat-icon aria-hidden="false" fontIcon="logout"></mat-icon>
+      <span>Logout</span>
+    </button>
+
+    @if ($userName() || $userEmail()) {
       <div class="navbar-profile-wrapper">
-        <div class="navbar-profile" (click)="toggleUserDropdown($event)">
-          <mat-icon aria-hidden="false" fontIcon="account_circle"></mat-icon>
+        <button class="navbar-profile" (click)="toggleUserDropdown($event)">
+          <mat-icon class="profile-avatar" aria-hidden="false" fontIcon="account_circle"></mat-icon>
           <div class="profile-info">
-            @if (userName) {
-              <p class="profile-name">{{ userName }}</p>
+            @if ($userName()) {
+              <p class="profile-name">{{ $userName() }}</p>
             }
-            @if (userEmail) {
-              <p class="profile-email">{{ userEmail }}</p>
+            @if ($userEmail()) {
+              <p class="profile-email">{{ $userEmail() }}</p>
             }
           </div>
-          <mat-icon class="dropdown-icon" [fontIcon]="showUserDropdown() ? 'expand_less' : 'expand_more'"></mat-icon>
-        </div>
+          <mat-icon class="dropdown-icon" [fontIcon]="$showUserDropdown() ? 'expand_less' : 'expand_more'"></mat-icon>
+        </button>
 
-        @if (showUserDropdown()) {
+        @if ($showUserDropdown()) {
           <div class="user-dropdown" (click)="$event.stopPropagation()">
             <button class="dropdown-item" (click)="navigateToProfile()">
               <mat-icon fontIcon="person"></mat-icon>

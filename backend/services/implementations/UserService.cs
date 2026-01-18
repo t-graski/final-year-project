@@ -176,9 +176,9 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
 
         return new UserDetailDto(
             user.Id,
-            user.Email,
             user.FirstName,
             user.LastName,
+            user.Email,
             user.IsActive,
             user.Permissions,
             user.CreatedAtUtc,

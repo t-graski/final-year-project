@@ -91,7 +91,7 @@ export class AdminAuditTabComponent implements OnInit {
   getActionIcon(action: string | null | undefined): string {
     if (!action) return 'help_outline';
     const lowerAction = action.toLowerCase();
-    if (lowerAction.includes('create')) return 'add_circle';
+    if (lowerAction.includes('insert')) return 'add_circle';
     if (lowerAction.includes('update') || lowerAction.includes('edit')) return 'edit';
     if (lowerAction.includes('delete')) return 'delete';
     if (lowerAction.includes('login')) return 'login';
@@ -102,7 +102,7 @@ export class AdminAuditTabComponent implements OnInit {
   getActionColor(action: string | null | undefined): string {
     if (!action) return '';
     const lowerAction = action.toLowerCase();
-    if (lowerAction.includes('create')) return 'action-create';
+    if (lowerAction.includes('insert')) return 'action-create';
     if (lowerAction.includes('update') || lowerAction.includes('edit')) return 'action-update';
     if (lowerAction.includes('delete')) return 'action-delete';
     if (lowerAction.includes('login')) return 'action-login';

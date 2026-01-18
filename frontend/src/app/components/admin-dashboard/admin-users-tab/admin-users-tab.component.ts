@@ -117,7 +117,7 @@ export class AdminUsersTabComponent implements OnInit {
     if (!roles || roles.length === 0) return 'No role';
     const roleNames: string[] = [];
     if (roles.includes(1)) roleNames.push('Student');
-    if (roles.includes(2)) roleNames.push('Lecturer');
+    if (roles.includes(2)) roleNames.push('Staff');
     if (roles.includes(3)) roleNames.push('Admin');
     return roleNames.length > 0 ? roleNames.join(', ') : 'Unknown';
   }

@@ -58,6 +58,8 @@ export class Login {
         next: (user) => {
           if (user.roles?.includes(3)) {
             void this.router.navigateByUrl('/admin');
+          } else if (user.roles?.includes(2)) {
+            void this.router.navigateByUrl('/staff');
           } else {
             void this.router.navigateByUrl('/dashboard');
           }

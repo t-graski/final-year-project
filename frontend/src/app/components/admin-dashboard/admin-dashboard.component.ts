@@ -16,6 +16,7 @@ import {AdminModulesTabComponent} from './admin-modules-tab/admin-modules-tab.co
 import {AdminEnrollCourseTabComponent} from './admin-enroll-course-tab/admin-enroll-course-tab.component';
 import {AdminEnrollModuleTabComponent} from './admin-enroll-module-tab/admin-enroll-module-tab.component';
 import {AdminAuditTabComponent} from './admin-audit-tab/admin-audit-tab.component';
+import {NavigationService} from '../../services/navigation.service';
 
 type AdminView = 'users' | 'courses' | 'modules' | 'enroll-course' | 'enroll-module' | 'audit';
 type EnrollmentMode = 'user' | 'course' | 'module';
@@ -43,6 +44,8 @@ export class AdminDashboardComponent implements OnInit {
   private readonly adminUserService = inject(AdminUserService);
   private readonly userService = inject(UserService);
   private readonly router = inject(Router);
+
+  readonly navigationService = inject(NavigationService);
 
   $currentView = signal<AdminView>('users');
   $isLoading = signal(false);
@@ -138,6 +141,7 @@ export class AdminDashboardComponent implements OnInit {
 
   getCurrentUserName(): string {
     const user = this.userService.getCurrentUser();
+    console.log(user)
     return user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Admin';
   }
 
