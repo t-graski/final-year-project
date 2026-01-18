@@ -1,0 +1,100 @@
+﻿<div class="profile-info-tab">
+  @if (isLoading()) {
+    <div class="profile-info-loading">
+      <mat-icon fontIcon="hourglass_empty"></mat-icon>
+      <p>Loading profile information...</p>
+    </div>
+  } @else if (userInfo(); as info) {
+    <div class="profile-info-content">
+      <section class="profile-info-section">
+        <div class="profile-info-section-header">
+          <mat-icon fontIcon="person"></mat-icon>
+          <h3>Personal Information</h3>
+        </div>
+        <div class="profile-info-grid">
+          <div class="profile-info-item">
+            <label>Name</label>
+            <p>{{ info.name }}</p>
+          </div>
+          <div class="profile-info-item">
+            <label>Email</label>
+            <p>{{ info.email }}</p>
+          </div>
+          @if (info.studentNumber) {
+            <div class="profile-info-item">
+              <label>Student Number</label>
+              <p>{{ info.studentNumber }}</p>
+            </div>
+          }
+          @if (info.staffNumber) {
+            <div class="profile-info-item">
+              <label>Staff Number</label>
+              <p>{{ info.staffNumber }}</p>
+            </div>
+          }
+          <div class="profile-info-item">
+            <label>Roles</label>
+            <div class="profile-info-roles">
+              @for (role of info.roles; track role) {
+                <span class="profile-info-role-badge" [ngClass]="getRoleBadgeClass(role)">
+                  {{ role }}
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      @if (info.course) {
+        <section class="profile-info-section">
+          <div class="profile-info-section-header">
+            <mat-icon fontIcon="school"></mat-icon>
+            <h3>Academic Information</h3>
+          </div>
+          <div class="profile-info-grid">
+            <div class="profile-info-item">
+              <label>Course</label>
+              <p>{{ info.course }}</p>
+            </div>
+            <div class="profile-info-item">
+              <label>Year of Study</label>
+              <p>Year {{ info.yearOfStudy }}</p>
+            </div>
+            <div class="profile-info-item">
+              <label>Current Semester</label>
+              <p>Semester {{ info.semester }}</p>
+            </div>
+            @if (info.attendanceRate !== undefined) {
+              <div class="profile-info-item">
+                <label>Attendance Rate</label>
+                <div class="profile-info-attendance">
+                  <div class="profile-info-attendance-bar">
+                    <div class="profile-info-attendance-fill" [style.width.%]="info.attendanceRate"></div>
+                  </div>
+                  <span class="profile-info-attendance-text">{{ info.attendanceRate }}%</span>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (info.modules && info.modules.length > 0) {
+        <section class="profile-info-section">
+          <div class="profile-info-section-header">
+            <mat-icon fontIcon="menu_book"></mat-icon>
+            <h3>{{ info.roles.includes('Student') ? 'Enrolled Modules' : 'Teaching Modules' }}</h3>
+          </div>
+          <div class="profile-info-modules">
+            @for (module of info.modules; track module.code) {
+              <div class="profile-info-module-card">
+                <div class="profile-info-module-code">{{ module.code }}</div>
+                <div class="profile-info-module-name">{{ module.name }}</div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>

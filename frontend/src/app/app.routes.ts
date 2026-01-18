@@ -11,6 +11,7 @@ import {
 } from './components/student-dashboard/student-dashboard.component';
 import {AdminDashboardComponent} from './components/admin-dashboard/admin-dashboard.component';
 import {StaffDashboardComponent} from './components/staff-dashboard/staff-dashboard.component';
+import {ProfileComponent} from './components/profile/profile.component';
 
 export const routes: Routes = [
   {
@@ -36,5 +37,10 @@ export const routes: Routes = [
     path: 'admin',
     component: AdminDashboardComponent,
     canActivate: [authGuard, adminGuard]
+  },
+  {
+    path: 'profile',
+    component: ProfileComponent,
+    canActivate: [authGuard]
   }
 ];

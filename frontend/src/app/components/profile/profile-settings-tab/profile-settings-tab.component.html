@@ -1,0 +1,202 @@
+﻿<div class="profile-settings-tab">
+  @if ($preferences(); as prefs) {
+    <div class="profile-settings-content">
+      <!-- Appearance Settings -->
+      <section class="profile-settings-section">
+        <div class="profile-settings-section-header">
+          <mat-icon fontIcon="palette"></mat-icon>
+          <h3>Appearance</h3>
+        </div>
+
+        <div class="profile-settings-item">
+          <label for="theme-select">Theme</label>
+          <select
+            id="theme-select"
+            class="profile-settings-select"
+            [value]="prefs.theme"
+            (change)="onThemeChange($any($event.target).value)">
+            <option [value]="Theme.LIGHT">Light</option>
+            <option [value]="Theme.DARK">Dark</option>
+            <option [value]="Theme.AUTO">Auto (System)</option>
+          </select>
+          <p class="profile-settings-description">Choose your preferred color scheme</p>
+        </div>
+      </section>
+
+      <!-- Navigation Settings -->
+      <section class="profile-settings-section">
+        <div class="profile-settings-section-header">
+          <mat-icon fontIcon="navigation"></mat-icon>
+          <h3>Navigation</h3>
+        </div>
+
+        <div class="profile-settings-item">
+          <label for="default-page-select">Default Page</label>
+          <select
+            id="default-page-select"
+            class="profile-settings-select"
+            [value]="prefs.defaultPage"
+            (change)="onDefaultPageChange($any($event.target).value)">
+            @for (page of availablePages(); track page) {
+              <option [value]="page">{{ getPageLabel(page) }}</option>
+            }
+          </select>
+          <p class="profile-settings-description">Page to redirect to after login</p>
+        </div>
+
+        <div class="profile-settings-item">
+          <label class="profile-settings-checkbox-label">
+            <input
+              type="checkbox"
+              class="profile-settings-checkbox"
+              [checked]="prefs.customNavbar"
+              (change)="onCustomNavbarChange($any($event.target).checked)">
+            <span>Customize Navbar</span>
+          </label>
+          <p class="profile-settings-description">Select which pages appear in your navigation bar</p>
+        </div>
+
+        @if (prefs.customNavbar) {
+          <div class="profile-settings-navbar-pages">
+            <label>Navbar Pages</label>
+            <div class="profile-settings-chip-group">
+              @for (page of availablePages(); track page) {
+                <button
+                  class="profile-settings-chip"
+                  [class.profile-settings-chip--selected]="isPageSelected(page)"
+                  (click)="onNavbarPageToggle(page)">
+                  <mat-icon [fontIcon]="isPageSelected(page) ? 'check_circle' : 'circle'"></mat-icon>
+                  <span>{{ getPageLabel(page) }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- Notifications Settings -->
+      <section class="profile-settings-section">
+        <div class="profile-settings-section-header">
+          <mat-icon fontIcon="notifications"></mat-icon>
+          <h3>Notifications</h3>
+        </div>
+
+        <div class="profile-settings-item">
+          <label class="profile-settings-checkbox-label">
+            <input
+              type="checkbox"
+              class="profile-settings-checkbox"
+              [checked]="prefs.showNotifications"
+              (change)="onShowNotificationsChange($any($event.target).checked)">
+            <span>Show Notifications</span>
+          </label>
+          <p class="profile-settings-description">Display notification badges and alerts</p>
+        </div>
+
+        <div class="profile-settings-item">
+          <label class="profile-settings-checkbox-label">
+            <input
+              type="checkbox"
+              class="profile-settings-checkbox"
+              [checked]="prefs.emailNotifications"
+              (change)="onEmailNotificationsChange($any($event.target).checked)">
+            <span>Email Notifications</span>
+          </label>
+          <p class="profile-settings-description">Receive notifications via email</p>
+        </div>
+
+        <div class="profile-settings-item">
+          <label class="profile-settings-checkbox-label">
+            <input
+              type="checkbox"
+              class="profile-settings-checkbox"
+              [checked]="prefs.desktopNotifications"
+              (change)="onDesktopNotificationsChange($any($event.target).checked)">
+            <span>Desktop Notifications</span>
+          </label>
+          <p class="profile-settings-description">Show browser desktop notifications</p>
+        </div>
+      </section>
+
+      <!-- Language Settings -->
+      <section class="profile-settings-section">
+        <div class="profile-settings-section-header">
+          <mat-icon fontIcon="language"></mat-icon>
+          <h3>Language & Region</h3>
+        </div>
+
+        <div class="profile-settings-item">
+          <label for="language-select">Language</label>
+          <select
+            id="language-select"
+            class="profile-settings-select"
+            [value]="prefs.language"
+            (change)="onLanguageChange($any($event.target).value)">
+            @for (lang of availableLanguages; track lang.code) {
+              <option [value]="lang.code">{{ lang.name }}</option>
+            }
+          </select>
+          <p class="profile-settings-description">Choose your preferred language</p>
+        </div>
+      </section>
+
+      <!-- Admin Table Settings -->
+      @if ($isAdmin() && $adminTablePreferences(); as adminPrefs) {
+        <section class="profile-settings-section">
+          <div class="profile-settings-section-header">
+            <mat-icon fontIcon="table_chart"></mat-icon>
+            <h3>Admin Table Settings</h3>
+          </div>
+
+          <div class="profile-settings-item">
+            <label for="rows-per-page">Rows Per Page</label>
+            <select
+              id="rows-per-page"
+              class="profile-settings-select"
+              [value]="adminPrefs.rowsPerPage"
+              (change)="onRowsPerPageChange(+$any($event.target).value)">
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+              <option [value]="50">50</option>
+              <option [value]="100">100</option>
+            </select>
+            <p class="profile-settings-description">Number of rows to display per page in tables</p>
+          </div>
+
+          @for (table of ['users', 'courses', 'modules', 'enrollments']; track table) {
+            <div class="profile-settings-table-columns">
+              <label>{{ table | titlecase }} Table Columns</label>
+              <div class="profile-settings-chip-group">
+                @for (column of getAvailableTableColumns()[table]; track column.key) {
+                  <button
+                    class="profile-settings-chip"
+                    [class.profile-settings-chip--selected]="isColumnVisible(table, column.key)"
+                    (click)="onTableColumnToggle(table, column.key)">
+                    <mat-icon [fontIcon]="isColumnVisible(table, column.key) ? 'check_circle' : 'circle'"></mat-icon>
+                    <span>{{ column.label }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </section>
+      }
+
+      <!-- Reset Settings -->
+      <section class="profile-settings-section">
+        <div class="profile-settings-section-header">
+          <mat-icon fontIcon="restore"></mat-icon>
+          <h3>Reset Settings</h3>
+        </div>
+
+        <div class="profile-settings-item">
+          <button class="profile-settings-reset-button" (click)="resetSettings()">
+            <mat-icon fontIcon="restore"></mat-icon>
+            <span>Reset to Defaults</span>
+          </button>
+          <p class="profile-settings-description">Restore all settings to their default values</p>
+        </div>
+      </section>
+    </div>
+  }
+</div>

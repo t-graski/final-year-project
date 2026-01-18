@@ -69,6 +69,7 @@ export class App implements OnInit {
     if (currentUrl.includes('/admin')) return 'Admin Dashboard';
     if (currentUrl.includes('/staff')) return 'Staff Dashboard';
     if (currentUrl.includes('/attendance')) return 'Attendance Management';
+    if (currentUrl.includes('/profile')) return 'Profile';
     return 'Student Dashboard';
   }
 
