@@ -204,7 +204,7 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
         }
 
         var lastNumber = int.Parse(lastStudent.StudentNumber[1..]);
-        return $"w{lastNumber}";
+        return $"w{lastNumber + 1}";
     }
 
     private async Task<string> GenerateStaffNumber()
@@ -219,6 +219,6 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
         }
 
         var lastNumber = int.Parse(lastStaff.StaffNumber[1..]);
-        return $"s{lastNumber}";
+        return $"s{lastNumber + 1}";
     }
 }

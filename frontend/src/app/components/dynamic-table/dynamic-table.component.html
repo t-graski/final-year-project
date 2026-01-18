@@ -4,8 +4,8 @@
       <mat-icon fontIcon="search"></mat-icon>
       <input
         type="text"
-        [placeholder]="searchPlaceholder"
-        [(ngModel)]="searchQuery"
+        [placeholder]="$searchPlaceholder()"
+        [(ngModel)]="$searchQuery"
         class="search-input"
       />
     </div>
@@ -23,7 +23,7 @@
     </div>
   </div>
 
-  @if (showColumnSelector()) {
+  @if ($showColumnSelector()) {
     <div class="modal-overlay" (click)="closeColumnSelector()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
@@ -36,7 +36,7 @@
           <p class="modal-description">Select which columns you want to display in the table. Changes are applied immediately.</p>
 
           <div class="column-list">
-            @for (column of columns; track column.key) {
+            @for (column of $columns(); track column.key) {
               <label class="column-option">
                 <input
                   type="checkbox"
@@ -60,7 +60,7 @@
   }
 
   <div class="table-wrapper">
-    @if (loading) {
+    @if ($loading()) {
       <div class="loading-overlay">
         <mat-icon fontIcon="refresh" class="spinning"></mat-icon>
         <span>Loading...</span>
@@ -70,7 +70,7 @@
     <table class="data-table">
       <thead>
         <tr>
-          @for (column of visibleColumns(); track column.key) {
+          @for (column of $visibleColumns(); track column.key) {
             <th
               [class.sortable]="column.sortable"
               (click)="toggleSort(column)"
@@ -84,9 +84,9 @@
         </tr>
       </thead>
       <tbody>
-        @for (item of filteredData(); track item) {
+        @for (item of $filteredData(); track item) {
           <tr (contextmenu)="openContextMenu($event, item)" (click)="$event.stopPropagation()">
-            @for (column of visibleColumns(); track column.key) {
+            @for (column of $visibleColumns(); track column.key) {
               <td [class]="column.cellClass || ''" [title]="getCellValue(item, column)">
                 {{ getCellValue(item, column) }}
               </td>
@@ -103,14 +103,14 @@
     </table>
   </div>
 
-  @if (contextMenuItem() && contextMenuPosition(); as pos) {
+  @if ($contextMenuItem() && $contextMenuPosition(); as pos) {
     <div
       class="context-menu"
       [style.left.px]="pos.x"
       [style.top.px]="pos.y"
       (click)="$event.stopPropagation()"
     >
-      @for (action of actions; track action.label) {
+      @for (action of $actions(); track action.label) {
         @if (action.divider) {
           <div class="context-menu-divider"></div>
         } @else {
@@ -127,7 +127,7 @@
     </div>
   }
 
-  @if (showDeleteConfirmation()) {
+  @if ($showDeleteConfirmation()) {
     <div class="modal-overlay" (click)="cancelDelete()">
       <div class="modal-content modal-content--confirm" (click)="$event.stopPropagation()">
         <div class="modal-header">
@@ -137,7 +137,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <p class="modal-description">{{ deleteConfirmationMessage() }}</p>
+          <p class="modal-description">{{ $deleteConfirmationMessage() }}</p>
           <p class="modal-warning">This action cannot be undone.</p>
         </div>
         <div class="modal-footer">
