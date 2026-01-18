@@ -23,6 +23,7 @@ export class Login {
 
   isSubmitting = false;
   errorMessage: string | null = null;
+  showHelpText = false;
 
   readonly loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -30,6 +31,10 @@ export class Login {
     rememberMe: [true]
   });
 
+  toggleHelpText(): void {
+    this.showHelpText = !this.showHelpText;
+    this.cdr.markForCheck();
+  }
 
   signIn(): void {
     if (this.loginForm.invalid || this.isSubmitting) return;

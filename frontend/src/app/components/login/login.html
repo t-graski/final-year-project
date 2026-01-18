@@ -49,6 +49,20 @@
         </div>
       }
 
+      <div class="help-link-wrapper">
+        <a class="help-link" (click)="toggleHelpText()">
+          <mat-icon fontIcon="help_outline"></mat-icon>
+          <span>I don't have an account?</span>
+        </a>
+      </div>
+
+      @if (showHelpText) {
+        <div class="help-text">
+          <mat-icon fontIcon="info_outline"></mat-icon>
+          <p>Please contact a university administrator to create an account for you.</p>
+        </div>
+      }
+
       <button class="login-button" type="submit" [disabled]="loginForm.invalid || isSubmitting">
         <span *ngIf="!isSubmitting">Sign In</span>
         <span *ngIf="isSubmitting" class="loading">
