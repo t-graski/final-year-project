@@ -1,12 +1,5 @@
 ﻿<div class="staff-dashboard">
   @if (!$isLoading()) {
-    <app-navbar
-      [$title]="'Staff Dashboard'"
-      [$subTitle]="'Welcome back, ' + $staffName()"
-      [$userName]="getCurrentUserName()"
-      [$userEmail]="getCurrentUserEmail()"
-      [$links]="[]">
-    </app-navbar>
 
     <div class="staff-dashboard-content">
       <div class="action-buttons">

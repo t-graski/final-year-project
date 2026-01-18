@@ -111,43 +111,6 @@
   }
 }
 
-.navbar-logout {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid $neutral-300;
-  background-color: $neutral-100;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    color: $neutral-600;
-  }
-
-  span {
-    color: $neutral-800;
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  &:hover {
-    background-color: $error-100;
-    border-color: $error-200;
-
-    mat-icon, span {
-      color: $error-200;
-    }
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
 
 .navbar-profile-wrapper {
   position: relative;
@@ -251,6 +214,22 @@
   &:active {
     background-color: $neutral-300;
   }
+
+  &--logout {
+    &:hover {
+      background-color: $error-100;
+
+      mat-icon, span {
+        color: $error-200;
+      }
+    }
+  }
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: $neutral-300;
+  margin: 4px 0;
 }
 
 @keyframes dropdownFadeIn {
@@ -285,8 +264,7 @@
     flex-wrap: wrap;
   }
 
-  .navbar-tab span,
-  .navbar-logout span {
+  .navbar-tab span {
     display: none;
   }
 }

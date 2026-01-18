@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, inject, OnInit, signal} from '@angular/core';
 import {MeService} from '../../api/api/me.service';
 import {StudentDashboardDto} from '../../api/model/studentDashboardDto';
-import {Navbar} from '../navbar/navbar';
 import {Card} from '../card/card';
 import {MatIconModule} from '@angular/material/icon';
 import {Router} from '@angular/router';
@@ -14,7 +13,7 @@ import {forkJoin} from 'rxjs';
   selector: 'app-student-dashboard',
   templateUrl: './student-dashboard.component.html',
   styleUrls: ['./student-dashboard.component.scss'],
-  imports: [Navbar, Card, MatIconModule, FormsModule],
+  imports: [Card, MatIconModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StudentDashboardComponent implements OnInit {
@@ -88,14 +87,5 @@ export class StudentDashboardComponent implements OnInit {
 
   onModuleClick(module: ModuleCardDto): void {
     console.log('Module clicked:', module);
-  }
-
-  getCurrentUserName(): string {
-    return this.studentName();
-  }
-
-  getCurrentUserEmail(): string {
-    const user = this.userService.getCurrentUser();
-    return user?.email || '';
   }
 }

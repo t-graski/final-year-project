@@ -1,5 +1,4 @@
-import {Component, inject, input, signal} from '@angular/core';
-import {NavLink} from '../../shared/models/nav-link.model';
+import {Component, computed, inject, input, signal} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
 import {AppAuthService} from '../../api/auth/app-auth.service';
 import {Router} from '@angular/router';
@@ -23,13 +22,15 @@ export class Navbar {
 
   $title = input<string>('');
   $subTitle = input<string>('');
-  $links = input<NavLink[]>([]);
   $userName = input<string>('');
   $userEmail = input<string>('');
 
   $showUserDropdown = signal(false);
 
+  $links = computed(() => this.navigationService.getNavigationLinks());
+
   navigateTo(path: string): void {
+    console.log(`navigating to ${path}`)
     void this.router.navigateByUrl(path);
   }
 

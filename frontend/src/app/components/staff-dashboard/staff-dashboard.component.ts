@@ -1,5 +1,4 @@
 ﻿import {ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, inject, OnInit, signal} from '@angular/core';
-import {Navbar} from '../navbar/navbar';
 import {Card} from '../card/card';
 import {MatIconModule} from '@angular/material/icon';
 import {Router} from '@angular/router';
@@ -19,7 +18,7 @@ interface StaffModule {
   selector: 'app-staff-dashboard',
   templateUrl: './staff-dashboard.component.html',
   styleUrls: ['./staff-dashboard.component.scss'],
-  imports: [CommonModule, Navbar, Card, MatIconModule, FormsModule],
+  imports: [CommonModule, Card, MatIconModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StaffDashboardComponent implements OnInit {
@@ -87,14 +86,5 @@ export class StaffDashboardComponent implements OnInit {
 
   onModuleClick(module: StaffModule): void {
     console.log('Module clicked:', module);
-  }
-
-  getCurrentUserName(): string {
-    return this.$staffName();
-  }
-
-  getCurrentUserEmail(): string {
-    const user = this.userService.getCurrentUser();
-    return user?.email || '';
   }
 }

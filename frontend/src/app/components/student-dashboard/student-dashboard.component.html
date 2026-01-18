@@ -1,16 +1,5 @@
 <div class="dashboard">
   @if (dashboardData(); as data) {
-    <app-navbar
-      [$title]="'Student Dashboard'"
-      [$subTitle]="'Welcome back, ' + studentName()"
-      [$userName]="getCurrentUserName()"
-      [$userEmail]="getCurrentUserEmail()"
-      [$links]="[
-        { label: 'Dashboard', path: '/dashboard', icon: 'home' },
-        { label: 'My Courses', path: '/dashboard', icon: 'school' },
-        { label: 'Attendance', path: '/attendance', icon: 'how_to_reg' }
-      ]">
-    </app-navbar>
 
     <div class="dashboard-content">
       @if (data.enrolledCourse; as course) {

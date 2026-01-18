@@ -21,11 +21,6 @@
       }
     </div>
 
-    <button class="navbar-logout" (click)="logout()" title="Logout">
-      <mat-icon aria-hidden="false" fontIcon="logout"></mat-icon>
-      <span>Logout</span>
-    </button>
-
     @if ($userName() || $userEmail()) {
       <div class="navbar-profile-wrapper">
         <button class="navbar-profile" (click)="toggleUserDropdown($event)">
@@ -50,6 +45,11 @@
             <button class="dropdown-item" (click)="navigateToSettings()">
               <mat-icon fontIcon="settings"></mat-icon>
               <span>Settings</span>
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item dropdown-item--logout" (click)="logout()">
+              <mat-icon fontIcon="logout"></mat-icon>
+              <span>Logout</span>
             </button>
           </div>
         }

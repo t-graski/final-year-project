@@ -22,7 +22,6 @@ type Student = {
 @Component({
   selector: 'app-dashboard',
   imports: [
-    Navbar,
     Card,
     MatIconModule,
     ProgressBar,
