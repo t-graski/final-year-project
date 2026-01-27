@@ -6,9 +6,9 @@ public static class RolePermissions
 {
     public static Permission ForRole(SystemRole role) => role switch
     {
-        SystemRole.Student => Permission.ViewStudents,
-        SystemRole.Staff => Permission.ViewStudents,
-        SystemRole.Admin => Permission.SuperAdmin | (Permission)long.MaxValue,
+        SystemRole.Student => Permission.None,
+        SystemRole.Staff => Permission.CatalogRead | Permission.EnrollmentRead,
+        SystemRole.Admin => Permission.SuperAdmin,
         _ => Permission.None
     };
 }

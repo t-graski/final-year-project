@@ -1,4 +1,4 @@
-﻿using backend.auth;
+using backend.auth;
 using backend.dtos;
 using backend.responses;
 using backend.services.interfaces;
@@ -13,7 +13,7 @@ public class AdminEnrollmentController(IAdminEnrollmentService enrollment) : Con
 {
     [HttpPost("students/{studentId:guid}/course/enrollment")]
     [Authorize]
-    [RequirePermission(Permission.ManageStudents)]
+    [RequirePermission(Permission.EnrollmentWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
     public async Task<IActionResult> EnrollCourse(Guid studentId, EnrollInCourseDto dto)
     {
@@ -23,7 +23,7 @@ public class AdminEnrollmentController(IAdminEnrollmentService enrollment) : Con
 
     [HttpPatch("students/{studentId:guid}/course/enrollment/status")]
     [Authorize]
-    [RequirePermission(Permission.ManageStudents)]
+    [RequirePermission(Permission.EnrollmentWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SetCourseStatus(Guid studentId, SetCourseEnrollmentStatusDto dto)
     {
@@ -33,7 +33,7 @@ public class AdminEnrollmentController(IAdminEnrollmentService enrollment) : Con
 
     [HttpPost("students/{studentId:guid}/modules/{moduleId:guid}/enroll")]
     [Authorize]
-    [RequirePermission(Permission.ManageStudents)]
+    [RequirePermission(Permission.EnrollmentWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
     public async Task<IActionResult> EnrollModule(Guid studentId, Guid moduleId, EnrollInModuleDto dto)
     {
@@ -43,7 +43,7 @@ public class AdminEnrollmentController(IAdminEnrollmentService enrollment) : Con
 
     [HttpPatch("module/enrollments/{enrollmentId:guid}/status")]
     [Authorize]
-    [RequirePermission(Permission.ManageStudents)]
+    [RequirePermission(Permission.EnrollmentWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SetModuleStatus(Guid enrollmentId, SetModuleEnrollmentStatusDto dto)
     {
@@ -53,7 +53,7 @@ public class AdminEnrollmentController(IAdminEnrollmentService enrollment) : Con
 
     [HttpDelete("module/enrollments/{enrollmentId:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ManageStudents)]
+    [RequirePermission(Permission.EnrollmentWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteModuleEnrollment(Guid enrollmentId)
     {

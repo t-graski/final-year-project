@@ -20,7 +20,6 @@ export class AdminCoursesTabComponent implements OnInit {
   private readonly adminCatalogService = inject(AdminCatalogService);
   private readonly snackbarService = inject(SnackbarService);
 
-  // Expose Permission enum to template
   protected readonly Permission = Permission;
 
   $isLoading = signal(false);

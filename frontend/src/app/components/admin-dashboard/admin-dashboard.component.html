@@ -4,7 +4,7 @@
     <aside class="sidebar">
       <h3>Settings</h3>
       <nav class="sidebar-nav">
-        @if ($canViewUsers()) {
+        @if (permissionService.$canReadUser()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'users'"
@@ -13,7 +13,7 @@
             <span>Users</span>
           </button>
         }
-        @if ($canViewCatalog()) {
+        @if (permissionService.$canReadCatalog()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'courses'"
@@ -22,7 +22,7 @@
             <span>Courses</span>
           </button>
         }
-        @if ($canViewCatalog()) {
+        @if (permissionService.$canReadCatalog()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'modules'"
@@ -32,11 +32,13 @@
           </button>
         }
 
-        @if ($canViewCatalog() || $canViewEnrollments() || $canViewUsers()) {
+        @if (permissionService.$canReadCatalog()
+        || permissionService.$canReadEnrollment()
+        || permissionService.$canReadUser()) {
           <div class="sidebar-divider"></div>
         }
 
-        @if ($canManageEnrollments()) {
+        @if (permissionService.$canWriteEnrollment()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'enroll-course'"
@@ -45,7 +47,7 @@
             <span>Enroll in Course</span>
           </button>
         }
-        @if ($canManageEnrollments()) {
+        @if (permissionService.$canWriteEnrollment()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'enroll-module'"
@@ -55,11 +57,11 @@
           </button>
         }
 
-        @if ($canViewAudit()) {
+        @if (permissionService.$canReadAudit()) {
           <div class="sidebar-divider"></div>
         }
 
-        @if ($canViewAudit()) {
+        @if (permissionService.$canReadAudit()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'audit'"
@@ -68,7 +70,7 @@
             <span>Audit Log</span>
           </button>
         }
-        @if ($canViewAudit()) {
+        @if (permissionService.$canReadAudit()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'login-audit'"

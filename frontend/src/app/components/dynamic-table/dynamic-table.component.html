@@ -1,5 +1,5 @@
-<div class="table-container" (click)="closeContextMenu()">
-  <div class="table-header" (click)="$event.stopPropagation()">
+<div class="table-container">
+  <div class="table-header">
     <div class="search-bar">
       <mat-icon fontIcon="search"></mat-icon>
       <input
@@ -86,7 +86,7 @@
       </thead>
       <tbody>
         @for (item of $filteredData(); track item) {
-          <tr (contextmenu)="openContextMenu($event, item)" (click)="$event.stopPropagation()">
+          <tr (contextmenu)="openContextMenu($event, item)">
             @for (column of $visibleColumns(); track column.key) {
               <td [class]="column.cellClass || ''" [title]="getCellValue(item, column)">
                 {{ getCellValue(item, column) }}
@@ -104,29 +104,12 @@
     </table>
   </div>
 
-  @if ($contextMenuItem() && $contextMenuPosition(); as pos) {
-    <div
-      class="context-menu"
-      [style.left.px]="pos.x"
-      [style.top.px]="pos.y"
-      (click)="$event.stopPropagation()"
-    >
-      @for (action of $filteredActions(); track action.label) {
-        @if (action.divider) {
-          <div class="context-menu-divider"></div>
-        } @else {
-          <button
-            class="context-menu-item"
-            [class.context-menu-item--danger]="action.danger"
-            (click)="handleAction(action)"
-          >
-            <mat-icon [fontIcon]="action.icon"></mat-icon>
-            <span>{{ action.label }}</span>
-          </button>
-        }
-      }
-    </div>
-  }
+  <app-context-menu
+    [actions]="$contextMenuActions()"
+    [isOpen]="$isContextMenuOpen()"
+    [position]="$contextMenuPosition()"
+    (close)="closeContextMenu()"
+  />
 
   @if ($showDeleteConfirmation()) {
     <div class="modal-overlay" (click)="cancelDelete()">

@@ -1,4 +1,4 @@
-﻿using backend.auth;
+using backend.auth;
 using backend.dtos;
 using backend.models.@base;
 using backend.responses;
@@ -24,7 +24,7 @@ public class UserController(IUserService users) : ControllerBase
 
     [HttpGet]
     [Authorize]
-    [RequirePermission(Permission.ViewUsers)]
+    [RequirePermission(Permission.UserRead)]
     [ProducesResponseType(typeof(ApiResponse<UserSummaryDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 25)
     {
@@ -34,7 +34,7 @@ public class UserController(IUserService users) : ControllerBase
 
     [HttpGet("{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ViewUsers)]
+    [RequirePermission(Permission.UserRead)]
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(Guid id)
     {
@@ -44,7 +44,7 @@ public class UserController(IUserService users) : ControllerBase
 
     [HttpPost]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create(CreateUserDto dto)
     {
@@ -54,7 +54,7 @@ public class UserController(IUserService users) : ControllerBase
 
     [HttpPatch("{id:guid}/status")]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SetStatus(Guid id, SetUserStatusDto dto)
     {
@@ -64,7 +64,7 @@ public class UserController(IUserService users) : ControllerBase
 
     [HttpPost("{id:guid}/roles")]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> AssignRole(Guid id, AssignRoleDto dto)
     {
@@ -74,7 +74,7 @@ public class UserController(IUserService users) : ControllerBase
 
     [HttpPost("{id:guid}/roles/{role}")]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RemoveRole(Guid id, string role)

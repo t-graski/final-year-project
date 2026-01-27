@@ -16,11 +16,9 @@ public class User : SoftDeletableEntity<Guid>
     public long Permissions { get; set; }
 
     public DateTimeOffset? EmailVerifiedAtUtc { get; set; }
-
     public DateTimeOffset? LastLoginAtUtc { get; set; }
     public int FailedLoginCount { get; set; }
     public DateTimeOffset? LockOutUntilUtc { get; set; }
-
     public ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
 
     public Student? Student { get; set; }

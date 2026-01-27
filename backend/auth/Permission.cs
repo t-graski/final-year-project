@@ -5,17 +5,35 @@ public enum Permission : long
 {
     None = 0,
 
-    ViewUsers = 1L << 0,
-    ManageUsers = 1L << 1,
+    CatalogRead = 1L << 10,
+    CatalogWrite = 1L << 11,
+    CatalogDelete = 1L << 12,
 
-    ViewStudents = 1L << 2,
-    ManageStudents = 1L << 3,
+    EnrollmentRead = 1L << 13,
+    EnrollmentWrite = 1L << 14,
+    EnrollmentApprove = 1L << 15,
+    EnrollmentDelete = 1L << 16,
 
-    ViewCourses = 1L << 4,
-    ManageCourses = 1L << 5,
+    AuditRead = 1L << 17,
 
-    ViewAttendance = 1L << 6,
-    ManageAttendance = 1L << 7,
+    UserRead = 1L << 18,
+    UserWrite = 1L << 19,
+    UserDelete = 1L << 20,
+    UserManageRoles = 1L << 21,
 
-    SuperAdmin = 1L << 60
+    RoleRead = 1L << 22,
+    RoleWrite = 1L << 23,
+    RoleDelete = 1L << 24,
+
+    AttendanceRead = 1L << 25,
+    AttendanceWrite = 1L << 26,
+
+    SystemBootstrap = 1L << 30,
+
+    SuperAdmin = 1L << 31,
+
+    ManageUsers = UserWrite | UserDelete | UserManageRoles,
+    ManageStudents = EnrollmentWrite | EnrollmentApprove | EnrollmentDelete,
+    ManageCourses = CatalogRead | CatalogWrite | CatalogDelete,
+    ManageModules = CatalogRead | CatalogWrite | CatalogDelete,
 }

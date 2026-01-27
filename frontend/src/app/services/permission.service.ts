@@ -37,9 +37,6 @@ export enum Permission {
 export class PermissionService {
   private readonly userService = inject(UserService);
 
-  /**
-   * Check if the current user has a specific permission
-   */
   hasPermission(permission: Permission): boolean {
     const user = this.userService.getCurrentUser();
     if (!user || !user.permissions) {
@@ -54,62 +51,46 @@ export class PermissionService {
     return (user.permissions & permission) === permission;
   }
 
-  /**
-   * Check if the current user has any of the specified permissions
-   */
   hasAnyPermission(...permissions: Permission[]): boolean {
     return permissions.some(p => this.hasPermission(p));
   }
 
-  /**
-   * Check if the current user has all of the specified permissions
-   */
   hasAllPermissions(...permissions: Permission[]): boolean {
     return permissions.every(p => this.hasPermission(p));
   }
 
-
-  /**
-   * Check if the current user is a SuperAdmin
-   * SuperAdmin in the backend uses bit 63 (1 << 63), which makes the number negative
-   */
   isSuperAdmin(): boolean {
     const user = this.userService.getCurrentUser();
     if (!user || user.permissions === undefined || user.permissions === null) {
       return false;
     }
 
-    // Check if the permissions value is negative (sign bit set, representing 1 << 63)
-    // or explicitly check for very large positive values that would overflow
-    return user.permissions < 0;
+    // Check SuperAdmin bit directly to avoid circular dependency with hasPermission()
+    return (user.permissions & Permission.SuperAdmin) === Permission.SuperAdmin;
   }
 
-  /**
-   * Get all permissions for the current user
-   */
   getUserPermissions(): number {
     const user = this.userService.getCurrentUser();
     return user?.permissions ?? 0;
   }
 
-  // Convenience computed signals for common permission checks
-  canReadCatalog = computed(() => this.hasPermission(Permission.CatalogRead));
-  canWriteCatalog = computed(() => this.hasPermission(Permission.CatalogWrite));
-  canDeleteCatalog = computed(() => this.hasPermission(Permission.CatalogDelete));
+  $canReadCatalog = computed(() => this.hasPermission(Permission.CatalogRead));
+  $canWriteCatalog = computed(() => this.hasPermission(Permission.CatalogWrite));
+  $canDeleteCatalog = computed(() => this.hasPermission(Permission.CatalogDelete));
 
-  canReadEnrollment = computed(() => this.hasPermission(Permission.EnrollmentRead));
-  canWriteEnrollment = computed(() => this.hasPermission(Permission.EnrollmentWrite));
-  canApproveEnrollment = computed(() => this.hasPermission(Permission.EnrollmentApprove));
-  canDeleteEnrollment = computed(() => this.hasPermission(Permission.EnrollmentDelete));
+  $canReadEnrollment = computed(() => this.hasPermission(Permission.EnrollmentRead));
+  $canWriteEnrollment = computed(() => this.hasPermission(Permission.EnrollmentWrite));
+  $canApproveEnrollment = computed(() => this.hasPermission(Permission.EnrollmentApprove));
+  $canDeleteEnrollment = computed(() => this.hasPermission(Permission.EnrollmentDelete));
 
-  canReadAudit = computed(() => this.hasPermission(Permission.AuditRead));
+  $canReadAudit = computed(() => this.hasPermission(Permission.AuditRead));
 
-  canReadUser = computed(() => this.hasPermission(Permission.UserRead));
-  canWriteUser = computed(() => this.hasPermission(Permission.UserWrite));
-  canDeleteUser = computed(() => this.hasPermission(Permission.UserDelete));
-  canManageRoles = computed(() => this.hasPermission(Permission.UserManageRoles));
+  $canReadUser = computed(() => this.hasPermission(Permission.UserRead));
+  $canWriteUser = computed(() => this.hasPermission(Permission.UserWrite));
+  $canDeleteUser = computed(() => this.hasPermission(Permission.UserDelete));
+  $canManageRoles = computed(() => this.hasPermission(Permission.UserManageRoles));
 
-  canAccessAdminDashboard = computed(() =>
+  $canAccessAdminDashboard = computed(() =>
     this.hasAnyPermission(
       Permission.UserRead,
       Permission.UserWrite,

@@ -6,7 +6,7 @@ export const adminGuard: CanActivateFn = () => {
   const permissionService = inject(PermissionService);
   const router = inject(Router);
 
-  if (permissionService.canAccessAdminDashboard()) {
+  if (permissionService.$canAccessAdminDashboard()) {
     return true;
   }
 

@@ -12,7 +12,12 @@ public class BootstrapService(AppDbContext db) : IBootstrapService
 {
     public async Task Boostrap()
     {
-        var adminExists = await db.UserRoles.AnyAsync(r => r.Role == SystemRole.Admin);
+        // Check if roles exist, if not seed them
+        await SeedSystemRolesAsync();
+
+        // Check if admin already exists
+        var adminRole = await db.Roles.FirstAsync(r => r.Key == "admin");
+        var adminExists = await db.UserRoles.AnyAsync(r => r.RoleId == adminRole.Id && !r.IsDeleted);
 
         if (adminExists)
         {
@@ -29,7 +34,7 @@ public class BootstrapService(AppDbContext db) : IBootstrapService
             DateOfBirth = DateOnly.MinValue,
             PasswordHash = hash,
             IsActive = true,
-            Permissions = (long)RolePermissions.ForRole(SystemRole.Admin)
+            Permissions = adminRole.Permissions
         };
 
         db.Users.Add(user);
@@ -37,7 +42,7 @@ public class BootstrapService(AppDbContext db) : IBootstrapService
         var userRole = new UserRole
         {
             UserId = user.Id,
-            Role = SystemRole.Admin
+            RoleId = adminRole.Id
         };
 
         db.UserRoles.Add(userRole);
@@ -51,6 +56,44 @@ public class BootstrapService(AppDbContext db) : IBootstrapService
 
         db.Staff.Add(staff);
 
+        await db.SaveChangesAsync();
+    }
+
+    private async Task SeedSystemRolesAsync()
+    {
+        // Check if roles already exist
+        var rolesExist = await db.Roles.AnyAsync();
+        if (rolesExist) return;
+
+        // Create system roles
+        var studentRole = new Role
+        {
+            Key = "student",
+            Name = "Student",
+            Permissions = (long)Permission.None,
+            Rank = 10,
+            IsSystem = true
+        };
+
+        var staffRole = new Role
+        {
+            Key = "staff",
+            Name = "Staff",
+            Permissions = (long)(Permission.CatalogRead | Permission.EnrollmentRead | Permission.AttendanceRead | Permission.AttendanceWrite),
+            Rank = 20,
+            IsSystem = true
+        };
+
+        var adminRole = new Role
+        {
+            Key = "admin",
+            Name = "Administrator",
+            Permissions = (long)Permission.SuperAdmin,
+            Rank = 999,
+            IsSystem = true
+        };
+
+        db.Roles.AddRange(studentRole, staffRole, adminRole);
         await db.SaveChangesAsync();
     }
 }

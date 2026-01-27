@@ -38,7 +38,11 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
                 u.LastName,
                 u.IsActive,
                 u.Permissions,
-                u.Roles.Where(r => !r.IsDeleted).Select(r => (short)r.Role).ToList(),
+                u.Roles.Where(r => !r.IsDeleted).Select(r => new RoleDto(
+                    r.Role.Id,
+                    r.Role.Name,
+                    r.Role.Permissions
+                )).ToList(),
                 u.Student != null && !u.Student.IsDeleted
                     ? new StudentMiniDto(u.Student.Id, u.Student.StudentNumber)
                     : null,
@@ -58,7 +62,11 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
                 u.LastName,
                 u.IsActive,
                 u.Permissions,
-                u.Roles.Where(r => !r.IsDeleted).Select(r => (short)r.Role).ToList(),
+                u.Roles.Where(r => !r.IsDeleted).Select(r => new RoleDto(
+                    r.Role.Id,
+                    r.Role.Name,
+                    r.Role.Permissions
+                )).ToList(),
                 u.Student != null && !u.Student.IsDeleted
                     ? new StudentMiniDto(u.Student.Id, u.Student.StudentNumber)
                     : null,
@@ -84,11 +92,6 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
             throw new AppException(409, "EMAIL_EXISTS", "Email already exists.");
         }
 
-        if (dto.Role.HasValue && !Enum.IsDefined(dto.Role.Value))
-        {
-            throw new AppException(400, "INVALID_ROLE", "Invalid system role specified.");
-        }
-
         var user = new User
         {
             Email = email,
@@ -101,39 +104,43 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
 
         db.Users.Add(user);
 
-        if (dto.Role.HasValue)
+        if (dto.RoleId.HasValue)
         {
+            var role = await db.Roles.FirstOrDefaultAsync(r => r.Id == dto.RoleId.Value && !r.IsDeleted);
+            if (role is null)
+            {
+                throw new AppException(404, "ROLE_NOT_FOUND", "Role not found.");
+            }
+
             var userRole = new UserRole
             {
                 UserId = user.Id,
-                Role = dto.Role.Value
+                RoleId = role.Id
             };
 
             db.UserRoles.Add(userRole);
-        }
+            user.Permissions = role.Permissions;
 
-        switch (dto.Role)
-        {
-            case SystemRole.Student:
+            // Create Student or Staff record based on role key
+            if (role.Key == "student")
+            {
                 var student = new Student
                 {
                     UserId = user.Id,
                     StudentNumber = await GenerateStudentNumber()
                 };
-
                 db.Students.Add(student);
-                break;
-            case SystemRole.Staff:
-            case SystemRole.Admin:
+            }
+            else if (role.Key is "staff" or "admin")
+            {
                 var staff = new Staff
                 {
                     UserId = user.Id,
                     StaffNumber = await GenerateStaffNumber(),
                     Department = "Unassigned"
                 };
-
                 db.Staff.Add(staff);
-                break;
+            }
         }
 
         await db.SaveChangesAsync();
@@ -181,7 +188,10 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
 
     public async Task RecomputePermissionsAsync(Guid userId)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+        var user = await db.Users
+            .Include(u => u.Roles)
+            .ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
 
         if (user is null)
         {

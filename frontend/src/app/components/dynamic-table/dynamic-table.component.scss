@@ -414,62 +414,6 @@
   }
 }
 
-.context-menu {
-  position: fixed;
-  background-color: $neutral-100;
-  border: 1px solid $neutral-300;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  padding: 8px;
-  z-index: 2000;
-  animation: contextMenuFadeIn 0.15s ease-out;
-}
-
-.context-menu-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  color: $neutral-700;
-  font-size: 14px;
-  text-align: left;
-  transition: background-color 0.15s;
-
-  mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-  }
-
-  &:hover {
-    background-color: $neutral-200;
-  }
-
-  &--danger {
-    color: $error-200;
-
-    mat-icon {
-      color: $error-200;
-    }
-
-    &:hover {
-      background-color: $error-100;
-    }
-  }
-}
-
-.context-menu-divider {
-  height: 1px;
-  background-color: $neutral-300;
-  margin: 4px 0;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -490,16 +434,6 @@
   }
 }
 
-@keyframes contextMenuFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
 
 @keyframes spin {
   from {

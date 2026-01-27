@@ -1,17 +1,18 @@
-import {inject, Injectable} from '@angular/core';
-import {BehaviorSubject, map, Observable, tap} from 'rxjs';
+import {inject, Injectable, signal} from '@angular/core';
+import {map, Observable, tap} from 'rxjs';
 import {UserDetailDto} from '../api';
 import {UserService as ApiUserService} from '../api/';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Injectable({providedIn: 'root'})
 export class UserService {
   private readonly apiUserService = inject(ApiUserService);
-  private readonly currentUserSub = new BehaviorSubject<UserDetailDto | null>(null);
+  private readonly currentUserSignal = signal<UserDetailDto | null>(null);
 
-  readonly currentUser$: Observable<UserDetailDto | null> = this.currentUserSub.asObservable();
+  readonly currentUser$ = toObservable(this.currentUserSignal);
 
   getCurrentUser(): UserDetailDto | null {
-    return this.currentUserSub.value;
+    return this.currentUserSignal();
   }
 
   loadCurrentUser(): Observable<UserDetailDto> {
@@ -22,11 +23,11 @@ export class UserService {
         }
         return response.data;
       }),
-      tap(user => this.currentUserSub.next(user))
+      tap(user => this.currentUserSignal.set(user))
     )
   }
 
   clearCurrentUser(): void {
-    this.currentUserSub.next(null);
+    this.currentUserSignal.set(null);
   }
 }

@@ -1,4 +1,4 @@
-﻿using backend.auth;
+using backend.auth;
 using backend.dtos;
 using backend.responses;
 using backend.services.interfaces;
@@ -14,21 +14,21 @@ public class AdminUserController(IAdminUserService users) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AdminUserListItemDto>>), StatusCodes.Status200OK)]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     public async Task<IActionResult> List([FromQuery] string? q = null, [FromQuery] int limit = 50,
         [FromQuery] int offset = 0) =>
         Ok(ApiResponse<IReadOnlyList<AdminUserListItemDto>>.Ok(await users.ListAsync(q, limit, offset)));
 
     [HttpGet("{userId:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     [ProducesResponseType(typeof(ApiResponse<AdminUserDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(Guid userId)
         => Ok(ApiResponse<AdminUserDetailDto>.Ok(await users.GetAsync(userId)));
 
     [HttpPost]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     [ProducesResponseType(typeof(ApiResponse<AdminUserDetailDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create(AdminCreateUserDto dto)
     {
@@ -38,14 +38,14 @@ public class AdminUserController(IAdminUserService users) : ControllerBase
 
     [HttpPut("{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     [ProducesResponseType(typeof(ApiResponse<AdminUserDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Update(Guid id, AdminUpdateUserDto dto)
         => Ok(ApiResponse<AdminUserDetailDto>.Ok(await users.UpdateAsync(id, dto)));
 
     [HttpPatch("{id:guid}/active")]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SetActive(Guid id, SetUserActiveDto dto)
     {
@@ -55,7 +55,7 @@ public class AdminUserController(IAdminUserService users) : ControllerBase
 
     [HttpDelete("{userId:guid}")]
     [Authorize]
-    [RequirePermission((Permission.ManageUsers))]
+    [RequirePermission((Permission.UserWrite))]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Delete(Guid userId)
     {
@@ -65,7 +65,7 @@ public class AdminUserController(IAdminUserService users) : ControllerBase
 
     [HttpPost("{id:guid}/permissions/recompute")]
     [Authorize]
-    [RequirePermission(Permission.ManageUsers)]
+    [RequirePermission(Permission.UserWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> RecomputePerms(Guid id)
     {

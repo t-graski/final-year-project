@@ -10,7 +10,7 @@ public record AdminUserListItemDto(
     string LastName,
     bool IsActive,
     long Permissions,
-    IReadOnlyList<short> Roles,
+    IReadOnlyList<RoleDto> Roles,
     StudentMiniDto? Student,
     StaffMiniDto? Staff
 );
@@ -26,7 +26,7 @@ public record AdminUserDetailDto(
     string LastName,
     bool IsActive,
     long Permissions,
-    IReadOnlyList<short> Roles,
+    IReadOnlyList<RoleDto> Roles,
     StudentMiniDto? Student,
     StaffMiniDto? Staff,
     DateTimeOffset CreatedAtUtc,
@@ -39,7 +39,7 @@ public record AdminCreateUserDto(
     string FirstName,
     string LastName,
     bool IsActive,
-    SystemRole? Role
+    Guid? RoleId
 );
 
 public record AdminUpdateUserDto(

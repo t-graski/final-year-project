@@ -1,4 +1,5 @@
-﻿using backend.models.@base;
+﻿using backend.models;
+using backend.models.@base;
 
 namespace backend.dtos;
 
@@ -21,7 +22,7 @@ public record UserDetailDto(
     long Permissions,
     DateTimeOffset? CreatedAtUtc,
     DateTimeOffset? UpdatedAtUtc,
-    IEnumerable<SystemRole> Roles
+    IEnumerable<Role> Roles
 );
 
 public record CreateUserDto(string Email, string Password, string FirstName, string LastName);

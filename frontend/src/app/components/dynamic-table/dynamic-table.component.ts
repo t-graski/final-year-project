@@ -3,6 +3,7 @@ import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
 import {FormsModule} from '@angular/forms';
 import {Permission, PermissionService} from '../../services/permission.service';
+import {ContextMenuComponent, ContextMenuAction} from '../context-menu/context-menu.component';
 
 export interface TableColumn<T = any> {
   key: string;
@@ -14,19 +15,20 @@ export interface TableColumn<T = any> {
 }
 
 export interface TableAction<T = any> {
-  icon: string;
+  icon?: string;
   label: string;
   handler: (item: T) => void;
   danger?: boolean;
   divider?: boolean;
   requiredPermission?: Permission | Permission[];
   hidden?: boolean;
+  disabled?: boolean;
 }
 
 @Component({
   selector: 'app-dynamic-table',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatIconModule, FormsModule, ContextMenuComponent],
   templateUrl: './dynamic-table.component.html',
   styleUrl: './dynamic-table.component.scss'
 })
@@ -49,26 +51,26 @@ export class DynamicTableComponent<T extends Record<string, any>> {
   $sortDirection = signal<'asc' | 'desc'>('asc');
   $showColumnSelector = signal(false);
 
-  $contextMenuPosition = signal<{ x: number, y: number } | null>(null);
+  $contextMenuPosition = signal<{ x: number, y: number }>({x: 0, y: 0});
+  $isContextMenuOpen = signal(false);
   $contextMenuItem = signal<T | null>(null);
 
   $showDeleteConfirmation = signal(false);
   $deleteConfirmationMessage = signal('');
   pendingDeleteAction: (() => void) | null = null;
 
-  // Computed filtered actions based on permissions
-  $filteredActions = computed(() => {
-    return this.$actions().filter(action => {
-      if (action.hidden) return false;
-      if (action.divider) return true;
-      if (!action.requiredPermission) return true;
-
-      const permissions = Array.isArray(action.requiredPermission)
-        ? action.requiredPermission
-        : [action.requiredPermission];
-
-      return this.permissionService.hasAnyPermission(...permissions);
-    });
+  // Convert TableAction to ContextMenuAction for the context menu component
+  $contextMenuActions = computed<ContextMenuAction[]>(() => {
+    return this.$actions().map(action => ({
+      label: action.label,
+      icon: action.icon,
+      danger: action.danger,
+      divider: action.divider,
+      requiredPermission: action.requiredPermission,
+      hidden: action.hidden,
+      disabled: action.disabled,
+      action: () => this.handleAction(action)
+    }));
   });
 
   $visibleColumns = computed(() =>
@@ -161,18 +163,16 @@ export class DynamicTableComponent<T extends Record<string, any>> {
   }
 
   openContextMenu(event: MouseEvent, item: T): void {
-    const actions = this.$filteredActions();
-    if (actions.length === 0) return;
-
     event.preventDefault();
     event.stopPropagation();
     this.$contextMenuItem.set(item);
     this.$contextMenuPosition.set({x: event.clientX, y: event.clientY});
+    this.$isContextMenuOpen.set(true);
   }
 
   closeContextMenu(): void {
+    this.$isContextMenuOpen.set(false);
     this.$contextMenuItem.set(null);
-    this.$contextMenuPosition.set(null);
   }
 
   handleAction(action: TableAction<T>): void {

@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public string? RequestPath { get; set; }
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Staff> Staff => Set<Staff>();
@@ -42,22 +43,41 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .IsUnique();
         });
 
+        b.Entity<Role>(e =>
+        {
+            e.ToTable("roles");
+
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Key)
+                .IsRequired()
+                .HasMaxLength(64);
+
+            e.Property(x => x.Name)
+                .IsRequired()
+                .HasMaxLength(128);
+
+            e.HasIndex(x => x.Key)
+                .IsUnique();
+        });
+
         b.Entity<UserRole>(e =>
         {
             e.ToTable("user_roles");
 
             e.HasKey(x => x.Id);
 
-            e.Property(x => x.Role)
-                .HasConversion<short>()
-                .IsRequired();
-
             e.HasOne(x => x.User)
                 .WithMany(u => u.Roles)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            e.HasIndex(x => new { x.UserId, x.Role })
+            e.HasOne(x => x.Role)
+                .WithMany()
+                .HasForeignKey(x => x.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasIndex(x => new { x.UserId, x.RoleId })
                 .IsUnique();
         });
 

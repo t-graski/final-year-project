@@ -1,4 +1,4 @@
-﻿using backend.auth;
+using backend.auth;
 using backend.dtos;
 using backend.responses;
 using backend.services.interfaces;
@@ -13,21 +13,21 @@ public class AdminCatalogController(IAdminCatalogService catalog) : ControllerBa
 {
     [HttpGet("courses")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AdminCourseDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ListCourses([FromQuery] string? q = null)
         => Ok(ApiResponse<IReadOnlyList<AdminCourseDto>>.Ok(await catalog.ListCoursesAsync(q)));
 
     [HttpGet("courses/{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<AdminCourseDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCourse(Guid id)
         => Ok(ApiResponse<AdminCourseDetailDto>.Ok(await catalog.GetCourseAsync(id)));
 
     [HttpPost("courses")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<AdminCourseDetailDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateCourse(CreateCourseDto dto)
     {
@@ -37,14 +37,14 @@ public class AdminCatalogController(IAdminCatalogService catalog) : ControllerBa
 
     [HttpPut("courses/{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<AdminCourseDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateCourse(Guid id, UpdateCourseDto dto)
         => Ok(ApiResponse<AdminCourseDetailDto>.Ok(await catalog.UpdateCourseAsync(id, dto)));
 
     [HttpDelete("courses/{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteCourse(Guid id)
     {
@@ -54,21 +54,21 @@ public class AdminCatalogController(IAdminCatalogService catalog) : ControllerBa
 
     [HttpGet("courses/{courseId:guid}/modules")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AdminModuleDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ListModules(Guid courseId)
         => Ok(ApiResponse<IReadOnlyList<AdminModuleDto>>.Ok(await catalog.ListModulesByCourseAsync(courseId)));
 
     [HttpGet("modules/{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<AdminModuleDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetModule(Guid id)
         => Ok(ApiResponse<AdminModuleDto>.Ok(await catalog.GetModuleAsync(id)));
 
     [HttpPost("courses/{courseId:guid}/modules")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<AdminModuleDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateModule(Guid courseId, CreateModuleDto dto)
     {
@@ -78,14 +78,14 @@ public class AdminCatalogController(IAdminCatalogService catalog) : ControllerBa
 
     [HttpPut("modules/{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<AdminModuleDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateModule(Guid id, UpdateModuleDto dto)
         => Ok(ApiResponse<AdminModuleDto>.Ok(await catalog.UpdateModuleAsync(id, dto)));
 
     [HttpDelete("modules/{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.ManageCourses)]
+    [RequirePermission(Permission.CatalogWrite)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteModule(Guid id)
     {

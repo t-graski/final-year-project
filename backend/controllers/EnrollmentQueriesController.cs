@@ -1,4 +1,4 @@
-﻿using backend.auth;
+using backend.auth;
 using backend.dtos;
 using backend.responses;
 using backend.services.interfaces;
@@ -13,7 +13,7 @@ public class EnrollmentQueriesController(IEnrollmentQueryService query) : Contro
 {
     [HttpGet("courses/{courseId:guid}/students")]
     [Authorize]
-    [RequirePermission(Permission.ManageStudents)]
+    [RequirePermission(Permission.EnrollmentRead)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CourseEnrollmentRowDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> StudentsByCourse(Guid courseId)
     {
@@ -23,7 +23,7 @@ public class EnrollmentQueriesController(IEnrollmentQueryService query) : Contro
 
     [HttpGet("modules/{moduleId:guid}/students")]
     [Authorize]
-    [RequirePermission(Permission.ManageStudents)]
+    [RequirePermission(Permission.EnrollmentRead)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ModuleEnrollmentRowDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> StudentsByModule(Guid moduleId)
     {
@@ -33,7 +33,7 @@ public class EnrollmentQueriesController(IEnrollmentQueryService query) : Contro
 
     [HttpGet("students/{studentId:guid}/history")]
     [Authorize]
-    [RequirePermission(Permission.ManageStudents)]
+    [RequirePermission(Permission.EnrollmentRead)]
     [ProducesResponseType(typeof(ApiResponse<StudentEnrollmentHistoryDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> StudentHistory(Guid studentId)
     {

@@ -21,10 +21,8 @@ export class AdminModulesTabComponent implements OnInit {
   private readonly adminCatalogService = inject(AdminCatalogService);
   private readonly snackbarService = inject(SnackbarService);
 
-  // Expose Permission enum to template
   protected readonly Permission = Permission;
 
-  // Input from parent
   courses = input.required<AdminCourseDto[]>();
 
   isLoading = signal(false);

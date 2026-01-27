@@ -76,12 +76,17 @@ public class AuditService(AppDbContext db) : IAuditService
             .ToDictionaryAsync(u => u.Id, u => u.Email);
 
         return auditEvents
-            .Select(audit => new LoginEventDto(
-                audit.AuditEventId,
-                users[Guid.Parse(audit.EntityId.Substring(3))],
-                audit.OccurredAtUtc,
-                audit.ActorUserId
-            ))
+            .Select(audit =>
+            {
+                var userId = Guid.Parse(audit.EntityId.Substring(3));
+                var email = users.GetValueOrDefault(userId, "[deleted user]");
+                return new LoginEventDto(
+                    audit.AuditEventId,
+                    email,
+                    audit.OccurredAtUtc,
+                    audit.ActorUserId
+                );
+            })
             .ToList();
     }
 }
