@@ -28,6 +28,8 @@ export * from './createUserDto';
 export * from './enrollInCourseDto';
 export * from './enrollInModuleDto';
 export * from './loginDto';
+export * from './loginEventDto';
+export * from './loginEventDtoIReadOnlyListApiResponse';
 export * from './moduleCardDto';
 export * from './moduleCardDtoApiResponse';
 export * from './moduleEnrollmentRowDto';

@@ -13,4 +13,6 @@ public interface IAuditService
         DateTimeOffset? toUtc,
         int limit,
         int offset);
+    
+    Task<IReadOnlyList<LoginEventDto>> SearchLoginAsync(Guid? actorUserId, int limit, int offset);
 }

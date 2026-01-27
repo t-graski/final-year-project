@@ -29,4 +29,15 @@ public class AdminAuditController(IAuditService audit) : ControllerBase
         var rows = await audit.SearchAsync(actorUserId, entityType, entityId, action, fromUtc, toUtc, limit, offset);
         return Ok(ApiResponse<IReadOnlyList<AuditEventDto>>.Ok(rows));
     }
+
+    [HttpGet("logins")]
+    [Authorize]
+    [RequirePermission(Permission.SuperAdmin)]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<LoginEventDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SearchLogin([FromQuery] Guid? actorUserId, [FromQuery] int limit = 50,
+        [FromQuery] int offset = 0)
+    {
+        var rows = await audit.SearchLoginAsync(actorUserId, limit, offset);
+        return Ok(ApiResponse<IReadOnlyList<LoginEventDto>>.Ok(rows));
+    }
 }

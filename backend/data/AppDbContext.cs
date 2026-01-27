@@ -215,6 +215,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         var now = DateTimeOffset.UtcNow;
         var actorId = ActorUserId;
 
+        var loginEntries = new HashSet<User>();
+        foreach (var entry in ChangeTracker.Entries<User>())
+        {
+            if (entry.State == EntityState.Modified && IsLoginEvent(entry))
+            {
+                loginEntries.Add(entry.Entity);
+            }
+        }
+
         foreach (var entry in ChangeTracker.Entries<ISoftDeletable>())
         {
             if (entry.State == EntityState.Deleted)
@@ -234,6 +243,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         foreach (var entry in ChangeTracker.Entries<IAuditable>())
         {
+            if (entry.Entity is User user && loginEntries.Contains(user))
+            {
+                continue;
+            }
+
             if (entry.State == EntityState.Added)
             {
                 entry.Entity.CreatedAtUtc = now;
@@ -246,7 +260,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             }
         }
 
-        var auditEvents = BuildAuditEvents(now, RequestPath, CorrelationId);
+        var auditEvents = BuildAuditEvents(now, RequestPath, CorrelationId, loginEntries);
 
         var result = await base.SaveChangesAsync(cancellationToken);
 
@@ -269,7 +283,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     };
 
     private List<AuditEvent> BuildAuditEvents(DateTimeOffset now, string? requestPath = null,
-        string? correlationId = null)
+        string? correlationId = null, HashSet<User>? loginEntries = null)
     {
         var list = new List<AuditEvent>();
 
@@ -280,13 +294,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             if (entry.Metadata.IsOwned()) continue;
 
-            var action = entry.State switch
-            {
-                EntityState.Added => "INSERT",
-                EntityState.Modified => IsSoftDelete(entry) ? "SOFT_DELETE" : "UPDATE",
-                EntityState.Deleted => "HARD_DELETE",
-                _ => entry.State.ToString().ToUpperInvariant()
-            };
+            var isLogin = entry.Entity is User user && (loginEntries?.Contains(user) ?? false);
+
+            var action = isLogin
+                ? "LOGIN"
+                : entry.State switch
+                {
+                    EntityState.Added => "INSERT",
+                    EntityState.Modified => IsSoftDelete(entry) ? "SOFT_DELETE" : "UPDATE",
+                    EntityState.Deleted => "HARD_DELETE",
+                    _ => entry.State.ToString().ToUpperInvariant()
+                };
 
             var entityType = entry.Metadata.ClrType.Name;
             var table = entry.Metadata.GetTableName() ?? entityType;
@@ -346,6 +364,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         }
 
         return list;
+    }
+
+    private static bool IsLoginEvent(EntityEntry entry)
+    {
+        var modifiedProps = entry.Properties
+            .Where(p => p.IsModified)
+            .Select(p => p.Metadata.Name)
+            .ToList();
+
+        return modifiedProps.Count == 1 && modifiedProps[0] == nameof(User.LastLoginAtUtc);
     }
 
     private static bool ShouldSkipProperty(IProperty prop)

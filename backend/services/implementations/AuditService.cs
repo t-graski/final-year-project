@@ -16,11 +16,14 @@ public class AuditService(AppDbContext db) : IAuditService
 
         var q = db.AuditEvents.AsNoTracking();
 
+        // filter out login events
+        q = q.Where(x => x.Action != "LOGIN");
+
         if (actorUserId.HasValue) q = q.Where(x => x.ActorUserId == actorUserId);
         if (!string.IsNullOrWhiteSpace(entityType)) q = q.Where(x => x.EntityType == entityType);
         if (!string.IsNullOrWhiteSpace(entityId)) q = q.Where(x => x.EntityId == entityId);
         if (!string.IsNullOrWhiteSpace(action)) q = q.Where(x => x.Action == action);
-        
+
         // if (fromUtc.HasValue) q = q.Where(x => x.OccuredAtUtc >= fromUtc.Value);
         // if (toUtc.HasValue) q = q.Where(x => x.OccuredAtUtc <= toUtc.Value);
 
@@ -40,5 +43,45 @@ public class AuditService(AppDbContext db) : IAuditService
                 x.MetadataJson
             ))
             .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<LoginEventDto>> SearchLoginAsync(Guid? actorUserId, int limit, int offset)
+    {
+        limit = Math.Clamp(limit, 1, 200);
+        offset = Math.Max(0, offset);
+
+        var q = db.AuditEvents.AsNoTracking();
+
+        // filter out login events
+        q = q.Where(x => x.Action == "LOGIN");
+
+        if (actorUserId.HasValue) q = q.Where(x => x.ActorUserId == actorUserId);
+
+        // if (fromUtc.HasValue) q = q.Where(x => x.OccuredAtUtc >= fromUtc.Value);
+        // if (toUtc.HasValue) q = q.Where(x => x.OccuredAtUtc <= toUtc.Value);
+
+        var auditEvents = await q
+            .OrderByDescending(x => x.OccurredAtUtc)
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync();
+
+        var userIds = auditEvents
+            .Select(x => Guid.Parse(x.EntityId[3..]))
+            .Distinct()
+            .ToList();
+
+        var users = await db.Users
+            .Where(u => userIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.Email);
+
+        return auditEvents
+            .Select(audit => new LoginEventDto(
+                audit.AuditEventId,
+                users[Guid.Parse(audit.EntityId.Substring(3))],
+                audit.OccurredAtUtc,
+                audit.ActorUserId
+            ))
+            .ToList();
     }
 }

@@ -52,6 +52,13 @@
           <mat-icon fontIcon="history"></mat-icon>
           <span>Audit Log</span>
         </button>
+        <button
+          class="sidebar-item"
+          [class.sidebar-item--active]="$currentView() === 'login-audit'"
+          (click)="setView('login-audit')">
+          <mat-icon fontIcon="login"></mat-icon>
+          <span>Login History</span>
+        </button>
       </nav>
     </aside>
 
@@ -98,6 +105,10 @@
 
         @if ($currentView() === 'audit') {
           <app-admin-audit-tab></app-admin-audit-tab>
+        }
+
+        @if ($currentView() === 'login-audit') {
+          <app-admin-login-audit-tab></app-admin-login-audit-tab>
         }
       }
     </main>

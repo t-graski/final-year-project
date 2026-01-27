@@ -18,7 +18,7 @@
           id="filter-user"
           class="filter-input"
           placeholder="Filter by user..."
-          [value]="$auditFilters().actorUserId"
+          [value]="$auditFilters().actorUserId || ''"
           (input)="updateAuditFilter('actorUserId', $any($event.target).value)"
         />
       </div>
@@ -28,7 +28,7 @@
         <select
           id="filter-entity-type"
           class="filter-select"
-          [value]="$auditFilters().entityType"
+          [value]="$auditFilters().entityType || ''"
           (change)="updateAuditFilter('entityType', $any($event.target).value)"
         >
           <option value="">All Types</option>
@@ -47,7 +47,7 @@
           id="filter-entity-id"
           class="filter-input"
           placeholder="Filter by entity ID..."
-          [value]="$auditFilters().entityId"
+          [value]="$auditFilters().entityId || ''"
           (input)="updateAuditFilter('entityId', $any($event.target).value)"
         />
       </div>
@@ -59,41 +59,17 @@
           id="filter-action"
           class="filter-input"
           placeholder="Filter by action..."
-          [value]="$auditFilters().action"
+          [value]="$auditFilters().action || ''"
           (input)="updateAuditFilter('action', $any($event.target).value)"
         />
       </div>
     </div>
 
-    <div class="filter-row">
-      <div class="filter-group">
-        <label for="filter-from">From Date</label>
-        <input
-          type="datetime-local"
-          id="filter-from"
-          class="filter-input"
-          [value]="$auditFilters().fromUtc"
-          (input)="updateAuditFilter('fromUtc', $any($event.target).value)"
-        />
-      </div>
-
-      <div class="filter-group">
-        <label for="filter-to">To Date</label>
-        <input
-          type="datetime-local"
-          id="filter-to"
-          class="filter-input"
-          [value]="$auditFilters().toUtc"
-          (input)="updateAuditFilter('toUtc', $any($event.target).value)"
-        />
-      </div>
-
-      <div class="filter-group filter-group--actions">
-        <button class="btn-primary" (click)="applyAuditFilters()">
-          <mat-icon fontIcon="search"></mat-icon>
-          Apply Filters
-        </button>
-      </div>
+    <div class="filter-group filter-group--actions">
+      <button class="btn-primary" (click)="applyAuditFilters()">
+        <mat-icon fontIcon="search"></mat-icon>
+        Apply Filters
+      </button>
     </div>
   </div>
 
