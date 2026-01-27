@@ -6,11 +6,13 @@ import {SnackbarService} from '../../../services/snackbar.service';
 import {AdminUserListItemDto} from '../../../api';
 import {DynamicTableComponent, TableColumn, TableAction} from '../../dynamic-table/dynamic-table.component';
 import {FormsModule} from '@angular/forms';
+import {Permission, PermissionService} from '../../../services/permission.service';
+import {HasPermissionDirective} from '../../../directives/has-permission.directive';
 
 @Component({
   selector: 'app-admin-users-tab',
   standalone: true,
-  imports: [CommonModule, MatIconModule, DynamicTableComponent, FormsModule],
+  imports: [CommonModule, MatIconModule, DynamicTableComponent, FormsModule, HasPermissionDirective],
   templateUrl: './admin-users-tab.component.html',
   styleUrl: './admin-users-tab.component.scss'
 })
@@ -18,6 +20,10 @@ export class AdminUsersTabComponent implements OnInit {
   private readonly adminUserService = inject(AdminUserService);
   private readonly userService = inject(UserService);
   private readonly snackbarService = inject(SnackbarService);
+  private readonly permissionService = inject(PermissionService);
+
+  // Expose Permission enum to template
+  protected readonly Permission = Permission;
 
   $isLoading = signal(false);
   $users = signal<AdminUserListItemDto[]>([]);
@@ -60,26 +66,63 @@ export class AdminUsersTabComponent implements OnInit {
   ];
 
   userActions: TableAction<AdminUserListItemDto>[] = [
-    {icon: 'visibility', label: 'View Details', handler: (user) => this.viewUserDetails(user.id!)},
-    {icon: 'school', label: 'View Enrollments', handler: (user) => this.viewUserEnrollments(user.id!)},
-    {icon: 'edit', label: 'Edit User', handler: (user) => this.snackbarService.show('Edit user (pending)', 400)},
-    {icon: 'lock_reset', label: 'Reset Password', handler: (user) => this.resetUserPassword(user.id!)},
+    {
+      icon: 'visibility',
+      label: 'View Details',
+      handler: (user) => this.viewUserDetails(user.id!),
+      requiredPermission: Permission.UserRead
+    },
+    {
+      icon: 'school',
+      label: 'View Enrollments',
+      handler: (user) => this.viewUserEnrollments(user.id!),
+      requiredPermission: Permission.EnrollmentRead
+    },
+    {
+      icon: 'edit',
+      label: 'Edit User',
+      handler: (user) => this.snackbarService.show('Edit user (pending)', 400),
+      requiredPermission: Permission.UserWrite
+    },
+    {
+      icon: 'lock_reset',
+      label: 'Reset Password',
+      handler: (user) => this.resetUserPassword(user.id!),
+      requiredPermission: Permission.UserWrite
+    },
     {
       icon: 'block',
       label: 'Toggle Status',
-      handler: (user) => this.toggleUserStatus(user.id!, user.isActive ?? false)
+      handler: (user) => this.toggleUserStatus(user.id!, user.isActive ?? false),
+      requiredPermission: Permission.UserWrite
     },
     {
       divider: true, icon: '', label: '', handler: () => {
       }
     },
-    {icon: 'admin_panel_settings', label: 'Assign Role', handler: (user) => this.assignRole(user.id!, 1)},
-    {icon: 'person', label: 'Impersonate User', handler: (user) => this.impersonateUser(user.id!)},
+    {
+      icon: 'admin_panel_settings',
+      label: 'Assign Role',
+      handler: (user) => this.assignRole(user.id!, 1),
+      requiredPermission: Permission.UserManageRoles
+    },
+    {
+      icon: 'person',
+      label: 'Impersonate User',
+      handler: (user) => this.impersonateUser(user.id!),
+      requiredPermission: Permission.SuperAdmin
+    },
     {
       divider: true, icon: '', label: '', handler: () => {
       }
     },
-    {icon: 'delete', label: 'Delete User', danger: true, handler: (user) => this.deleteUser(user.id!)}
+    {
+      icon: 'delete',
+      label: 'Delete User',
+      danger: true,
+      handler: (user) => this.deleteUser(user.id!),
+      requiredPermission: Permission.UserDelete
+    }
   ];
 
   $viewEnrollments = output<string>();

@@ -12,7 +12,8 @@
           }
         </select>
       </div>
-      <button class="action-btn-toolbar action-btn-toolbar--primary"
+      <button *appHasPermission="Permission.CatalogWrite"
+              class="action-btn-toolbar action-btn-toolbar--primary"
               (click)="openCreateModuleModal()" title="Add new module"
               [disabled]="!selectedCourseId()">
         <mat-icon fontIcon="add"></mat-icon>

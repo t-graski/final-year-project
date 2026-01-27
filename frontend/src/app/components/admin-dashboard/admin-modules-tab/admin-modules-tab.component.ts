@@ -7,17 +7,22 @@ import {AdminModuleDto} from '../../../api/model/adminModuleDto';
 import {AdminCourseDto} from '../../../api/model/adminCourseDto';
 import {DynamicTableComponent, TableColumn, TableAction} from '../../dynamic-table/dynamic-table.component';
 import {FormsModule} from '@angular/forms';
+import {Permission} from '../../../services/permission.service';
+import {HasPermissionDirective} from '../../../directives/has-permission.directive';
 
 @Component({
   selector: 'app-admin-modules-tab',
   standalone: true,
-  imports: [CommonModule, MatIconModule, DynamicTableComponent, FormsModule],
+  imports: [CommonModule, MatIconModule, DynamicTableComponent, FormsModule, HasPermissionDirective],
   templateUrl: './admin-modules-tab.component.html',
   styleUrl: './admin-modules-tab.component.scss'
 })
 export class AdminModulesTabComponent implements OnInit {
   private readonly adminCatalogService = inject(AdminCatalogService);
   private readonly snackbarService = inject(SnackbarService);
+
+  // Expose Permission enum to template
+  protected readonly Permission = Permission;
 
   // Input from parent
   courses = input.required<AdminCourseDto[]>();
@@ -65,15 +70,41 @@ export class AdminModulesTabComponent implements OnInit {
   ];
 
   moduleActions: TableAction<AdminModuleDto>[] = [
-    {icon: 'visibility', label: 'View Details', handler: (module) => this.showModuleDetails.set(module.id!)},
-    {icon: 'people', label: 'View Enrolled Students', handler: (module) => this.viewModuleEnrollments(module.id!)},
-    {icon: 'edit', label: 'Edit Module', handler: (module) => this.editModule(module)},
-    {icon: 'content_copy', label: 'Clone Module', handler: (module) => this.cloneModule(module)},
+    {
+      icon: 'visibility',
+      label: 'View Details',
+      handler: (module) => this.showModuleDetails.set(module.id!),
+      requiredPermission: Permission.CatalogRead
+    },
+    {
+      icon: 'people',
+      label: 'View Enrolled Students',
+      handler: (module) => this.viewModuleEnrollments(module.id!),
+      requiredPermission: Permission.EnrollmentRead
+    },
+    {
+      icon: 'edit',
+      label: 'Edit Module',
+      handler: (module) => this.editModule(module),
+      requiredPermission: Permission.CatalogWrite
+    },
+    {
+      icon: 'content_copy',
+      label: 'Clone Module',
+      handler: (module) => this.cloneModule(module),
+      requiredPermission: Permission.CatalogWrite
+    },
     {
       divider: true, icon: '', label: '', handler: () => {
       }
     },
-    {icon: 'delete', label: 'Delete Module', danger: true, handler: (module) => this.deleteModule(module.id!)}
+    {
+      icon: 'delete',
+      label: 'Delete Module',
+      danger: true,
+      handler: (module) => this.deleteModule(module.id!),
+      requiredPermission: Permission.CatalogDelete
+    }
   ];
 
   // Events to parent

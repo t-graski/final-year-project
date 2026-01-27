@@ -1,14 +1,20 @@
-﻿import {inject} from '@angular/core';
+﻿﻿import {inject} from '@angular/core';
 import {CanActivateFn, Router} from '@angular/router';
-import {UserService} from '../services/user.service';
+import {PermissionService, Permission} from '../services/permission.service';
 
 export const staffGuard: CanActivateFn = () => {
-  const userService = inject(UserService);
+  const permissionService = inject(PermissionService);
   const router = inject(Router);
 
-  const currentUser = userService.getCurrentUser();
-
-  if (currentUser?.roles?.includes(2) || currentUser?.roles?.includes(3)) {
+  // Staff can access if they have catalog read/write OR enrollment read/write permissions
+  if (permissionService.hasAnyPermission(
+    Permission.CatalogRead,
+    Permission.CatalogWrite,
+    Permission.EnrollmentRead,
+    Permission.EnrollmentWrite,
+    Permission.UserRead,
+    Permission.SuperAdmin
+  )) {
     return true;
   }
 
