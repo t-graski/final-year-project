@@ -46,6 +46,8 @@ model/createUserDto.ts
 model/enrollInCourseDto.ts
 model/enrollInModuleDto.ts
 model/loginDto.ts
+model/loginEventDto.ts
+model/loginEventDtoIReadOnlyListApiResponse.ts
 model/models.ts
 model/moduleCardDto.ts
 model/moduleCardDtoApiResponse.ts

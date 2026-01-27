@@ -33,7 +33,8 @@
           </button>
         </div>
         <div class="modal-body">
-          <p class="modal-description">Select which columns you want to display in the table. Changes are applied immediately.</p>
+          <p class="modal-description">Select which columns you want to display in the table. Changes are applied
+            immediately.</p>
 
           <div class="column-list">
             @for (column of $columns(); track column.key) {
@@ -69,19 +70,19 @@
 
     <table class="data-table">
       <thead>
-        <tr>
-          @for (column of $visibleColumns(); track column.key) {
-            <th
-              [class.sortable]="column.sortable"
-              (click)="toggleSort(column)"
-            >
-              <span>{{ column.label }}</span>
-              @if (column.sortable) {
-                <mat-icon [fontIcon]="getSortIcon(column)"></mat-icon>
-              }
-            </th>
-          }
-        </tr>
+      <tr>
+        @for (column of $visibleColumns(); track column.key) {
+          <th
+            [class.sortable]="column.sortable"
+            (click)="toggleSort(column)"
+          >
+            <span>{{ column.label }}</span>
+            @if (column.sortable) {
+              <mat-icon [fontIcon]="getSortIcon(column)"></mat-icon>
+            }
+          </th>
+        }
+      </tr>
       </thead>
       <tbody>
         @for (item of $filteredData(); track item) {
@@ -110,7 +111,7 @@
       [style.top.px]="pos.y"
       (click)="$event.stopPropagation()"
     >
-      @for (action of $actions(); track action.label) {
+      @for (action of $filteredActions(); track action.label) {
         @if (action.divider) {
           <div class="context-menu-divider"></div>
         } @else {

@@ -1,7 +1,8 @@
 ﻿<div class="view-container">
   <div class="view-header">
     <h2>Courses Management</h2>
-    <button class="action-btn-toolbar action-btn-toolbar--primary"
+    <button *appHasPermission="Permission.CatalogWrite"
+            class="action-btn-toolbar action-btn-toolbar--primary"
             (click)="openCreateCourseModal()" title="Add new course">
       <mat-icon fontIcon="add"></mat-icon>
       <span>Add Course</span>

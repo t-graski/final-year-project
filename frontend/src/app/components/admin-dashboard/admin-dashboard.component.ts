@@ -15,8 +15,9 @@ import {AdminModulesTabComponent} from './admin-modules-tab/admin-modules-tab.co
 import {AdminEnrollCourseTabComponent} from './admin-enroll-course-tab/admin-enroll-course-tab.component';
 import {AdminEnrollModuleTabComponent} from './admin-enroll-module-tab/admin-enroll-module-tab.component';
 import {AdminAuditTabComponent} from './admin-audit-tab/admin-audit-tab.component';
+import {AdminLoginAuditTab} from './admin-login-audit-tab/admin-login-audit-tab';
 
-type AdminView = 'users' | 'courses' | 'modules' | 'enroll-course' | 'enroll-module' | 'audit';
+type AdminView = 'users' | 'courses' | 'modules' | 'enroll-course' | 'enroll-module' | 'audit' | 'login-audit';
 type EnrollmentMode = 'user' | 'course' | 'module';
 
 @Component({
@@ -31,7 +32,8 @@ type EnrollmentMode = 'user' | 'course' | 'module';
     AdminModulesTabComponent,
     AdminEnrollCourseTabComponent,
     AdminEnrollModuleTabComponent,
-    AdminAuditTabComponent
+    AdminAuditTabComponent,
+    AdminLoginAuditTab
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
@@ -40,8 +42,8 @@ export class AdminDashboardComponent implements OnInit {
   private readonly adminCatalogService = inject(AdminCatalogService);
   private readonly adminUserService = inject(AdminUserService);
   private readonly userService = inject(UserService);
+  private readonly permissionService = inject(PermissionService);
   private readonly router = inject(Router);
-
 
   $currentView = signal<AdminView>('users');
   $isLoading = signal(false);
@@ -53,6 +55,23 @@ export class AdminDashboardComponent implements OnInit {
   $enrollmentDetailsMode = signal<EnrollmentMode>('user');
   $enrollmentDetailsEntityId = signal<string>('');
   $enrollmentDetailsEntityName = signal<string>('');
+
+  // Permission-based visibility signals
+  $canViewUsers = this.permissionService.canReadUser;
+  $canManageUsers = this.permissionService.canWriteUser;
+  $canDeleteUsers = this.permissionService.canDeleteUser;
+  $canManageRoles = this.permissionService.canManageRoles;
+
+  $canViewCatalog = this.permissionService.canReadCatalog;
+  $canManageCatalog = this.permissionService.canWriteCatalog;
+  $canDeleteCatalog = this.permissionService.canDeleteCatalog;
+
+  $canViewEnrollments = this.permissionService.canReadEnrollment;
+  $canManageEnrollments = this.permissionService.canWriteEnrollment;
+  $canApproveEnrollments = this.permissionService.canApproveEnrollment;
+  $canDeleteEnrollments = this.permissionService.canDeleteEnrollment;
+
+  $canViewAudit = this.permissionService.canReadAudit;
 
   ngOnInit(): void {
     this.checkAdminAccess();
@@ -93,6 +112,9 @@ export class AdminDashboardComponent implements OnInit {
         break;
       case 'audit':
         // Audit tab loads its own data
+        break;
+      case 'login-audit':
+        // Login audit tab loads its own data
         break;
     }
   }

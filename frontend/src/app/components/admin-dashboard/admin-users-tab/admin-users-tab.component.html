@@ -1,7 +1,8 @@
 ﻿<div class="view-container">
   <div class="view-header">
     <h2>Users Management</h2>
-    <button class="action-btn-toolbar action-btn-toolbar--primary"
+    <button *appHasPermission="Permission.UserWrite"
+            class="action-btn-toolbar action-btn-toolbar--primary"
             (click)="openCreateUserModal()" title="Add new user">
       <mat-icon fontIcon="add"></mat-icon>
       <span>Add User</span>

@@ -6,17 +6,22 @@ import {SnackbarService} from '../../../services/snackbar.service';
 import {AdminCourseDto} from '../../../api';
 import {DynamicTableComponent, TableColumn, TableAction} from '../../dynamic-table/dynamic-table.component';
 import {FormsModule} from '@angular/forms';
+import {Permission} from '../../../services/permission.service';
+import {HasPermissionDirective} from '../../../directives/has-permission.directive';
 
 @Component({
   selector: 'app-admin-courses-tab',
   standalone: true,
-  imports: [CommonModule, MatIconModule, DynamicTableComponent, FormsModule],
+  imports: [CommonModule, MatIconModule, DynamicTableComponent, FormsModule, HasPermissionDirective],
   templateUrl: './admin-courses-tab.component.html',
   styleUrl: './admin-courses-tab.component.scss'
 })
 export class AdminCoursesTabComponent implements OnInit {
   private readonly adminCatalogService = inject(AdminCatalogService);
   private readonly snackbarService = inject(SnackbarService);
+
+  // Expose Permission enum to template
+  protected readonly Permission = Permission;
 
   $isLoading = signal(false);
   $courses = signal<AdminCourseDto[]>([]);
@@ -44,15 +49,41 @@ export class AdminCoursesTabComponent implements OnInit {
   ];
 
   courseActions: TableAction<AdminCourseDto>[] = [
-    {icon: 'visibility', label: 'View Details', handler: (course) => this.$showCourseDetails.set(course.id!)},
-    {icon: 'people', label: 'View Enrolled Students', handler: (course) => this.viewCourseEnrollments(course.id!)},
-    {icon: 'edit', label: 'Edit Course', handler: (course) => this.editCourse(course)},
-    {icon: 'content_copy', label: 'Clone Course', handler: (course) => this.cloneCourse(course)},
+    {
+      icon: 'visibility',
+      label: 'View Details',
+      handler: (course) => this.$showCourseDetails.set(course.id!),
+      requiredPermission: Permission.CatalogRead
+    },
+    {
+      icon: 'people',
+      label: 'View Enrolled Students',
+      handler: (course) => this.viewCourseEnrollments(course.id!),
+      requiredPermission: Permission.EnrollmentRead
+    },
+    {
+      icon: 'edit',
+      label: 'Edit Course',
+      handler: (course) => this.editCourse(course),
+      requiredPermission: Permission.CatalogWrite
+    },
+    {
+      icon: 'content_copy',
+      label: 'Clone Course',
+      handler: (course) => this.cloneCourse(course),
+      requiredPermission: Permission.CatalogWrite
+    },
     {
       divider: true, icon: '', label: '', handler: () => {
       }
     },
-    {icon: 'delete', label: 'Delete Course', danger: true, handler: (course) => this.deleteCourse(course.id!)}
+    {
+      icon: 'delete',
+      label: 'Delete Course',
+      danger: true,
+      handler: (course) => this.deleteCourse(course.id!),
+      requiredPermission: Permission.CatalogDelete
+    }
   ];
 
   $viewEnrollments = output<string>();

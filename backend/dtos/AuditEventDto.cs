@@ -11,3 +11,10 @@ public record AuditEventDto(
     string? ChangesJson,
     string? MetadataJson
 );
+
+public record LoginEventDto(
+    Guid Id,
+    string Email,
+    DateTimeOffset OccurredAtUtc,
+    Guid? ActorUserId
+);

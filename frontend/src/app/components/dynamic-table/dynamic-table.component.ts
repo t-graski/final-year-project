@@ -1,7 +1,8 @@
-import {Component, signal, computed, input, model, output} from '@angular/core';
+import {Component, signal, computed, input, model, output, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
 import {FormsModule} from '@angular/forms';
+import {Permission, PermissionService} from '../../services/permission.service';
 
 export interface TableColumn<T = any> {
   key: string;
@@ -18,6 +19,8 @@ export interface TableAction<T = any> {
   handler: (item: T) => void;
   danger?: boolean;
   divider?: boolean;
+  requiredPermission?: Permission | Permission[];
+  hidden?: boolean;
 }
 
 @Component({
@@ -28,6 +31,8 @@ export interface TableAction<T = any> {
   styleUrl: './dynamic-table.component.scss'
 })
 export class DynamicTableComponent<T extends Record<string, any>> {
+  private readonly permissionService = inject(PermissionService);
+
   $data = input<T[]>([]);
   $columns = model<TableColumn<T>[]>([]);
 
@@ -50,6 +55,21 @@ export class DynamicTableComponent<T extends Record<string, any>> {
   $showDeleteConfirmation = signal(false);
   $deleteConfirmationMessage = signal('');
   pendingDeleteAction: (() => void) | null = null;
+
+  // Computed filtered actions based on permissions
+  $filteredActions = computed(() => {
+    return this.$actions().filter(action => {
+      if (action.hidden) return false;
+      if (action.divider) return true;
+      if (!action.requiredPermission) return true;
+
+      const permissions = Array.isArray(action.requiredPermission)
+        ? action.requiredPermission
+        : [action.requiredPermission];
+
+      return this.permissionService.hasAnyPermission(...permissions);
+    });
+  });
 
   $visibleColumns = computed(() =>
     this.$columns().filter(col => col.visible !== false)
@@ -141,7 +161,8 @@ export class DynamicTableComponent<T extends Record<string, any>> {
   }
 
   openContextMenu(event: MouseEvent, item: T): void {
-    if (this.$actions().length === 0) return;
+    const actions = this.$filteredActions();
+    if (actions.length === 0) return;
 
     event.preventDefault();
     event.stopPropagation();
