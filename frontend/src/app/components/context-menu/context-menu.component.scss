@@ -57,7 +57,6 @@
 
   &:hover:not(&--disabled) {
     background: linear-gradient(135deg, rgba($brand-400, 0.08) 0%, rgba($brand-500, 0.05) 100%);
-    color: $brand-600;
 
     mat-icon {
       color: $brand-500;

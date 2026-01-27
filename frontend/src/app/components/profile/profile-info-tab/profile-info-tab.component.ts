@@ -1,8 +1,8 @@
-﻿import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
-import { UserService } from '../../../services/user.service';
-import { UserDetailDto } from '../../../api';
+﻿import {Component, inject, OnInit, signal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MatIconModule} from '@angular/material/icon';
+import {UserService} from '../../../services/user.service';
+import {UserDetailDto, Role} from '../../../api';
 
 interface UserInfo {
   name: string;
@@ -51,54 +51,55 @@ export class ProfileInfoTabComponent implements OnInit {
 
   private mapUserToInfo(user: UserDetailDto): UserInfo {
     // Mock data - TODO: Replace with actual API data
-    const roles = this.getRoleNames(user.roles || []);
+    const roles = this.getRoleNames(user.roles);
+    const roleObjects = user.roles || [];
 
     const info: UserInfo = {
       name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'N/A',
       email: user.email || 'N/A',
       roles,
-      modules: this.getMockModules(roles),
+      modules: this.getMockModules(roleObjects),
       attendanceRate: this.getMockAttendanceRate()
     };
 
-    // Add student-specific info
-    if (roles.includes('Student')) {
+    // Add student-specific info - check role.key
+    if (roleObjects.some(r => r.key?.toLowerCase() === 'student')) {
       info.studentNumber = 'w1234567'; // Mock
       info.course = 'BSc Computer Science'; // Mock
       info.yearOfStudy = 2; // Mock
       info.semester = 1; // Mock
     }
 
-    // Add staff-specific info
-    if (roles.includes('Staff') || roles.includes('Admin')) {
+    // Add staff-specific info - check role.key
+    if (roleObjects.some(r => r.key?.toLowerCase() === 'staff') ||
+        roleObjects.some(r => r.key?.toLowerCase() === 'admin')) {
       info.staffNumber = 's1001'; // Mock
     }
 
     return info;
   }
 
-  private getRoleNames(roles: number[]): string[] {
-    const roleMap: Record<number, string> = {
-      1: 'Student',
-      2: 'Staff',
-      3: 'Admin'
-    };
-    return roles.map(r => roleMap[r] || 'Unknown');
+  private getRoleNames(roles: Role[] | null | undefined): string[] {
+    if (!roles || roles.length === 0) return [];
+
+    return roles
+      .map(role => role.name)
+      .filter((name): name is string => name != null && name.length > 0);
   }
 
-  private getMockModules(roles: string[]): Array<{ code: string; name: string; }> {
+  private getMockModules(roles: Role[]): Array<{ code: string; name: string; }> {
     // Mock module data
-    if (roles.includes('Student')) {
+    if (roles.some(r => r.key?.toLowerCase() === 'student')) {
       return [
-        { code: 'CS101', name: 'Introduction to Programming' },
-        { code: 'CS201', name: 'Data Structures' },
-        { code: 'CS301', name: 'Algorithms' },
-        { code: 'MATH201', name: 'Discrete Mathematics' }
+        {code: 'CS101', name: 'Introduction to Programming'},
+        {code: 'CS201', name: 'Data Structures'},
+        {code: 'CS301', name: 'Algorithms'},
+        {code: 'MATH201', name: 'Discrete Mathematics'}
       ];
-    } else if (roles.includes('Staff')) {
+    } else if (roles.some(r => r.key?.toLowerCase() === 'staff')) {
       return [
-        { code: 'CS101', name: 'Introduction to Programming' },
-        { code: 'CS401', name: 'Advanced Algorithms' }
+        {code: 'CS101', name: 'Introduction to Programming'},
+        {code: 'CS401', name: 'Advanced Algorithms'}
       ];
     }
     return [];

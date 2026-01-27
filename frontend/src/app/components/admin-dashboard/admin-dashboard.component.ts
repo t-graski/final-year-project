@@ -71,7 +71,11 @@ export class AdminDashboardComponent implements OnInit {
 
   checkAdminAccess(): void {
     const currentUser = this.userService.getCurrentUser();
-    if (!currentUser?.roles?.includes(3)) {
+    const hasAdminRole = currentUser?.roles?.some(role =>
+      role.key?.toLowerCase() === 'admin'
+    ) || false;
+
+    if (!hasAdminRole) {
       void this.router.navigateByUrl('/dashboard');
     }
   }

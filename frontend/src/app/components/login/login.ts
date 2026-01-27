@@ -2,9 +2,11 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject} from '@an
 import {MatIconModule} from '@angular/material/icon';
 import {AppAuthService} from '../../api/auth/app-auth.service';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {finalize, switchMap} from 'rxjs/operators'
+import {finalize, switchMap, tap} from 'rxjs/operators'
 import {UserService} from '../../services/user.service';
 import {NavigationService} from '../../services/navigation.service';
+import {PermissionService} from '../../services/permission.service';
+import {RoleService} from '../../services/role.service';
 import {CommonModule} from '@angular/common';
 
 @Component({
@@ -18,6 +20,8 @@ export class Login {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AppAuthService);
   private readonly userService = inject(UserService);
+  private readonly permissionService = inject(PermissionService);
+  private readonly roleService = inject(RoleService);
   private readonly navigationService = inject(NavigationService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -49,6 +53,13 @@ export class Login {
       .login(email, password, rememberMe)
       .pipe(
         switchMap(() => this.userService.loadCurrentUser()),
+        tap(() => {
+          console.log("loading perms")
+          this.permissionService.loadPermissions();
+          console.log("loading roles")
+          this.roleService.loadRoles();
+          console.log("login loading done")
+        }),
         finalize(() => {
           this.isSubmitting = false;
           this.cdr.markForCheck();

@@ -1,13 +1,13 @@
 import {Directive, Input, TemplateRef, ViewContainerRef, OnInit, inject} from '@angular/core';
-import {PermissionService, Permission} from '../services/permission.service';
+import {PermissionService} from '../services/permission.service';
 
 /**
  * Structural directive to show/hide elements based on user permissions
  *
  * Usage:
- * - Single permission: *appHasPermission="Permission.UserWrite"
- * - Multiple permissions (any): *appHasPermission="[Permission.UserWrite, Permission.UserDelete]"
- * - All permissions required: *appHasPermission="[Permission.UserWrite, Permission.UserDelete]; mode: 'all'"
+ * - Single permission: *appHasPermission="'UserWrite'"
+ * - Multiple permissions (any): *appHasPermission="['UserWrite', 'UserDelete']"
+ * - All permissions required: *appHasPermission="['UserWrite', 'UserDelete']; mode: 'all'"
  */
 @Directive({
   selector: '[appHasPermission]',
@@ -20,7 +20,7 @@ export class HasPermissionDirective implements OnInit {
 
   private hasView = false;
 
-  @Input() appHasPermission: Permission | Permission[] = [];
+  @Input() appHasPermission: string | number | (string | number)[] = [];
   @Input() appHasPermissionMode: 'any' | 'all' = 'any';
 
   ngOnInit(): void {

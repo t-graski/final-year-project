@@ -3,10 +3,11 @@ import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
 import {AdminUserService, UserService} from '../../../api';
 import {SnackbarService} from '../../../services/snackbar.service';
-import {AdminUserListItemDto} from '../../../api';
+import {AdminUserListItemDto, RoleDto} from '../../../api';
 import {DynamicTableComponent, TableColumn, TableAction} from '../../dynamic-table/dynamic-table.component';
 import {FormsModule} from '@angular/forms';
-import {Permission, PermissionService} from '../../../services/permission.service';
+import {PermissionService} from '../../../services/permission.service';
+import {RoleService} from '../../../services/role.service';
 import {HasPermissionDirective} from '../../../directives/has-permission.directive';
 
 @Component({
@@ -21,14 +22,13 @@ export class AdminUsersTabComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly snackbarService = inject(SnackbarService);
   private readonly permissionService = inject(PermissionService);
-
-  // Expose Permission enum to template
-  protected readonly Permission = Permission;
+  protected readonly roleService = inject(RoleService);
 
   $isLoading = signal(false);
   $users = signal<AdminUserListItemDto[]>([]);
   $showUserDetails = signal<string | null>(null);
   $showCreateUserModal = signal<boolean>(false);
+  $showAssignRoleModal = signal<{ userId: string, currentRoles: RoleDto[] } | null>(null);
 
   $newUser = signal({
     firstName: '',
@@ -36,7 +36,7 @@ export class AdminUsersTabComponent implements OnInit {
     email: '',
     password: '',
     isActive: true,
-    systemRole: null as number | null
+    systemRole: null as string | null
   });
 
   userColumns: TableColumn<AdminUserListItemDto>[] = [
@@ -70,31 +70,31 @@ export class AdminUsersTabComponent implements OnInit {
       icon: 'visibility',
       label: 'View Details',
       handler: (user) => this.viewUserDetails(user.id!),
-      requiredPermission: Permission.UserRead
+      requiredPermission: "UserRead"
     },
     {
       icon: 'school',
       label: 'View Enrollments',
       handler: (user) => this.viewUserEnrollments(user.id!),
-      requiredPermission: Permission.EnrollmentRead
+      requiredPermission: "EnrollmentRead"
     },
     {
       icon: 'edit',
       label: 'Edit User',
       handler: (user) => this.snackbarService.show('Edit user (pending)', 400),
-      requiredPermission: Permission.UserWrite
+      requiredPermission: "UserWrite"
     },
     {
       icon: 'lock_reset',
       label: 'Reset Password',
       handler: (user) => this.resetUserPassword(user.id!),
-      requiredPermission: Permission.UserWrite
+      requiredPermission: "UserWrite"
     },
     {
       icon: 'block',
       label: 'Toggle Status',
       handler: (user) => this.toggleUserStatus(user.id!, user.isActive ?? false),
-      requiredPermission: Permission.UserWrite
+      requiredPermission: "UserWrite"
     },
     {
       divider: true, icon: '', label: '', handler: () => {
@@ -103,14 +103,14 @@ export class AdminUsersTabComponent implements OnInit {
     {
       icon: 'admin_panel_settings',
       label: 'Assign Role',
-      handler: (user) => this.assignRole(user.id!, 1),
-      requiredPermission: Permission.UserManageRoles
+      handler: (user) => this.openAssignRoleModal(user.id!, user.roles ?? []),
+      requiredPermission: "UserManageRoles"
     },
     {
       icon: 'person',
       label: 'Impersonate User',
       handler: (user) => this.impersonateUser(user.id!),
-      requiredPermission: Permission.SuperAdmin
+      requiredPermission: "SuperAdmin"
     },
     {
       divider: true, icon: '', label: '', handler: () => {
@@ -121,7 +121,7 @@ export class AdminUsersTabComponent implements OnInit {
       label: 'Delete User',
       danger: true,
       handler: (user) => this.deleteUser(user.id!),
-      requiredPermission: Permission.UserDelete
+      requiredPermission: "UserDelete"
     }
   ];
 
@@ -156,13 +156,13 @@ export class AdminUsersTabComponent implements OnInit {
     this.loadUsers();
   }
 
-  getRoleName(roles: number[] | null | undefined): string {
-    if (!roles || roles.length === 0) return 'No role';
-    const roleNames: string[] = [];
-    if (roles.includes(1)) roleNames.push('Student');
-    if (roles.includes(2)) roleNames.push('Staff');
-    if (roles.includes(3)) roleNames.push('Admin');
-    return roleNames.length > 0 ? roleNames.join(', ') : 'Unknown';
+  getRoleName(roles: RoleDto[] | null | undefined): string {
+    if (!roles || roles.length === 0) return 'No roles';
+    const roleNames = roles
+      .map(role => role.name)
+      .filter(name => name != null)
+      .join(', ');
+    return roleNames || 'Unknown';
   }
 
   viewUserDetails(userId: string): void {
@@ -204,19 +204,33 @@ export class AdminUsersTabComponent implements OnInit {
     });
   }
 
-  assignRole(userId: string, roleId: number): void {
-    // TODO: fix in backend
-    // this.userService.apiUsersIdRolesPost(userId, {role: roleId}).subscribe({
-    //   next: (response: any) => {
-    //     this.snackbarService.showFromApiResponse(response);
-    //     this.loadUsers();
-    //   },
-    //   error: (err: any) => {
-    //     const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
-    //     const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to assign role';
-    //     this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
-    //   }
-    // });
+  openAssignRoleModal(userId: string, currentRoles: RoleDto[]): void {
+    this.$showAssignRoleModal.set({userId, currentRoles});
+  }
+
+  closeAssignRoleModal(): void {
+    this.$showAssignRoleModal.set(null);
+  }
+
+  isRoleAssigned(roleId: string): boolean {
+    const modal = this.$showAssignRoleModal();
+    if (!modal) return false;
+    return modal.currentRoles.some(r => r.id === roleId);
+  }
+
+  assignRole(userId: string, roleId: string): void {
+    this.userService.apiUsersIdRolesPost(userId, {roleId} as any).subscribe({
+      next: (response: any) => {
+        this.snackbarService.showFromApiResponse(response);
+        this.closeAssignRoleModal();
+        this.loadUsers();
+      },
+      error: (err: any) => {
+        const errorCode = err?.error?.error?.code || err?.error?.code || 'ERROR';
+        const errorMessage = err?.error?.error?.message || err?.error?.message || 'Failed to assign role';
+        this.snackbarService.show(`${errorCode}: ${errorMessage}`, err?.status || 500);
+      }
+    });
   }
 
   impersonateUser(userId: string): void {
@@ -262,7 +276,7 @@ export class AdminUsersTabComponent implements OnInit {
       email: user.email,
       password: user.password,
       isActive: user.isActive,
-      role: user.systemRole as any ?? undefined
+      roleId: user.systemRole
     }).subscribe({
       next: (response) => {
         this.snackbarService.showFromApiResponse(response);

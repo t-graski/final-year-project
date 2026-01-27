@@ -1,7 +1,7 @@
 ﻿import {inject, Injectable} from '@angular/core';
 import {Router} from '@angular/router';
 import {UserService} from './user.service';
-import {PermissionService, Permission} from './permission.service';
+import {PermissionService} from './permission.service';
 import {NavLink} from '../shared/models/nav-link.model';
 
 @Injectable({providedIn: 'root'})

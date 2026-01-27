@@ -1,7 +1,7 @@
 ﻿<div class="view-container">
   <div class="view-header">
     <h2>Users Management</h2>
-    <button *appHasPermission="Permission.UserWrite"
+    <button *appHasPermission="'UserWrite'"
             class="action-btn-toolbar action-btn-toolbar--primary"
             (click)="openCreateUserModal()" title="Add new user">
       <mat-icon fontIcon="add"></mat-icon>
@@ -71,9 +71,11 @@
           <label for="systemRole">Role</label>
           <select id="systemRole" [(ngModel)]="$newUser().systemRole">
             <option [ngValue]="null">No role</option>
-            <option [ngValue]="1">Student</option>
-            <option [ngValue]="2">Staff</option>
-            <option [ngValue]="3">Admin</option>
+            @if (roleService.$rolesLoaded()) {
+              @for (role of roleService.$roles(); track role.id) {
+                <option [ngValue]="role.id">{{ role.name }}</option>
+              }
+            }
           </select>
         </div>
 
@@ -155,3 +157,53 @@
   </div>
 }
 
+@if ($showAssignRoleModal()) {
+  <div class="modal-overlay" (click)="closeAssignRoleModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Assign Role</h3>
+        <button class="modal-close" (click)="closeAssignRoleModal()">
+          <mat-icon fontIcon="close"></mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Current Roles:</label>
+          <div class="current-roles">
+            @if ($showAssignRoleModal()!.currentRoles.length === 0) {
+              <span class="no-roles">No roles assigned</span>
+            } @else {
+              @for (role of $showAssignRoleModal()!.currentRoles; track role.id) {
+                <span class="role-badge">{{ role.name }}</span>
+              }
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="roleSelect">Available Roles:</label>
+          @if (roleService.$rolesLoaded()) {
+            <div class="role-list">
+              @for (role of roleService.$roles(); track role.id) {
+                <button
+                  class="role-item"
+                  [class.role-item--assigned]="isRoleAssigned(role.id!)"
+                  (click)="assignRole($showAssignRoleModal()!.userId, role.id!)">
+                  <mat-icon [fontIcon]="isRoleAssigned(role.id!) ? 'check_circle' : 'add_circle'"></mat-icon>
+                  <span>{{ role.name }}</span>
+                </button>
+              }
+            </div>
+          } @else {
+            <p class="loading-roles">Loading roles...</p>
+          }
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeAssignRoleModal()">Close</button>
+      </div>
+    </div>
+  </div>
+}

@@ -4,7 +4,7 @@
     <aside class="sidebar">
       <h3>Settings</h3>
       <nav class="sidebar-nav">
-        @if (permissionService.$canReadUser()) {
+        @if (permissionService.$canReadUser() || permissionService.isSuperAdmin()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'users'"
@@ -13,7 +13,7 @@
             <span>Users</span>
           </button>
         }
-        @if (permissionService.$canReadCatalog()) {
+        @if (permissionService.$canReadCatalog() || permissionService.isSuperAdmin()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'courses'"
@@ -22,7 +22,7 @@
             <span>Courses</span>
           </button>
         }
-        @if (permissionService.$canReadCatalog()) {
+        @if (permissionService.$canReadCatalog() || permissionService.isSuperAdmin()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'modules'"
@@ -34,11 +34,12 @@
 
         @if (permissionService.$canReadCatalog()
         || permissionService.$canReadEnrollment()
-        || permissionService.$canReadUser()) {
+        || permissionService.$canReadUser()
+        || permissionService.isSuperAdmin()) {
           <div class="sidebar-divider"></div>
         }
 
-        @if (permissionService.$canWriteEnrollment()) {
+        @if (permissionService.$canWriteEnrollment() || permissionService.isSuperAdmin()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'enroll-course'"
@@ -47,7 +48,7 @@
             <span>Enroll in Course</span>
           </button>
         }
-        @if (permissionService.$canWriteEnrollment()) {
+        @if (permissionService.$canWriteEnrollment() || permissionService.isSuperAdmin()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'enroll-module'"
@@ -57,11 +58,11 @@
           </button>
         }
 
-        @if (permissionService.$canReadAudit()) {
+        @if (permissionService.$canReadAudit() || permissionService.isSuperAdmin()) {
           <div class="sidebar-divider"></div>
         }
 
-        @if (permissionService.$canReadAudit()) {
+        @if (permissionService.$canReadAudit() || permissionService.isSuperAdmin()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'audit'"
@@ -70,7 +71,7 @@
             <span>Audit Log</span>
           </button>
         }
-        @if (permissionService.$canReadAudit()) {
+        @if (permissionService.$canReadAudit() || permissionService.isSuperAdmin()) {
           <button
             class="sidebar-item"
             [class.sidebar-item--active]="$currentView() === 'login-audit'"

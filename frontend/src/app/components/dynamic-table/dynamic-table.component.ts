@@ -2,7 +2,7 @@ import {Component, signal, computed, input, model, output, inject} from '@angula
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
 import {FormsModule} from '@angular/forms';
-import {Permission, PermissionService} from '../../services/permission.service';
+import {PermissionService} from '../../services/permission.service';
 import {ContextMenuComponent, ContextMenuAction} from '../context-menu/context-menu.component';
 
 export interface TableColumn<T = any> {
@@ -20,7 +20,7 @@ export interface TableAction<T = any> {
   handler: (item: T) => void;
   danger?: boolean;
   divider?: boolean;
-  requiredPermission?: Permission | Permission[];
+  requiredPermission?: string | number | (string | number)[];
   hidden?: boolean;
   disabled?: boolean;
 }

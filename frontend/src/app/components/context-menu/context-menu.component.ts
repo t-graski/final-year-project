@@ -1,13 +1,13 @@
 import {Component, input, output, signal, effect, ElementRef, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
-import {PermissionService, Permission} from '../../services/permission.service';
+import {PermissionService} from '../../services/permission.service';
 
 export interface ContextMenuAction {
   label: string;
   icon?: string;
   action: () => void;
-  requiredPermission?: Permission | Permission[];
+  requiredPermission?: string | number | (string | number)[];
   disabled?: boolean;
   divider?: boolean;
   danger?: boolean;

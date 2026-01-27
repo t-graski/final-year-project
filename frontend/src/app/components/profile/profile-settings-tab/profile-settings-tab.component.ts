@@ -48,7 +48,10 @@ export class ProfileSettingsTabComponent implements OnInit {
 
   private checkUserRole(): void {
     const user = this.userService.getCurrentUser();
-    this.$isAdmin.set(user?.roles?.includes(3) || false);
+    const hasAdminRole = user?.roles?.some(role =>
+      role.key?.toLowerCase() === 'admin'
+    ) || false;
+    this.$isAdmin.set(hasAdminRole);
   }
 
   private setAvailablePages(): void {
@@ -57,15 +60,21 @@ export class ProfileSettingsTabComponent implements OnInit {
 
     const pages: Page[] = [];
 
-    if (roles.includes(1)) {
+    // Check for Student role
+    if (roles.some(role => role.key?.toLowerCase() === 'student')) {
       pages.push(Page.DASHBOARD, Page.ATTENDANCE);
     }
-    if (roles.includes(2)) {
+
+    // Check for Staff role
+    if (roles.some(role => role.key?.toLowerCase() === 'staff')) {
       pages.push(Page.STAFF_DASHBOARD);
     }
-    if (roles.includes(3)) {
+
+    // Check for Admin role
+    if (roles.some(role => role.key?.toLowerCase() === 'admin')) {
       pages.push(Page.ADMIN_DASHBOARD);
     }
+
     pages.push(Page.PROFILE);
 
     this.availablePages.set(pages);

@@ -1,45 +1,58 @@
-import {Injectable, inject, computed} from '@angular/core';
+import {Injectable, inject, computed, signal} from '@angular/core';
 import {UserService} from './user.service';
+import {PermissionService as ApiPermissionService} from '../api/api/permission.service';
+import {PermissionMetadataDto} from '../api';
 
-/**
- * Permission flags matching the backend Permission enum
- */
-export enum Permission {
-  None = 0,
-
-  // Catalog permissions
-  CatalogRead = 1 << 10,
-  CatalogWrite = 1 << 11,
-  CatalogDelete = 1 << 12,
-
-  // Enrollment permissions
-  EnrollmentRead = 1 << 13,
-  EnrollmentWrite = 1 << 14,
-  EnrollmentApprove = 1 << 15,
-  EnrollmentDelete = 1 << 16,
-
-  // Audit permissions
-  AuditRead = 1 << 17,
-
-  // User management permissions
-  UserRead = 1 << 18,
-  UserWrite = 1 << 19,
-  UserDelete = 1 << 20,
-  UserManageRoles = 1 << 21,
-
-  // System permissions
-  SystemBootstrap = 1 << 22,
-
-  SuperAdmin = 1 << 31
+export interface PermissionMap {
+  [key: string]: number;
 }
 
 @Injectable({providedIn: 'root'})
 export class PermissionService {
   private readonly userService = inject(UserService);
+  private readonly apiPermissionService = inject(ApiPermissionService);
 
-  hasPermission(permission: Permission): boolean {
+  private readonly permissionsMetadata = signal<PermissionMetadataDto[]>([]);
+
+  private readonly permissionMap = signal<PermissionMap>({});
+
+  public readonly $permissionsLoaded = computed(() => this.permissionsMetadata().length > 0);
+
+  constructor() {
+  }
+
+  loadPermissions(): void {
+    this.apiPermissionService.apiPermissionsGet().subscribe({
+      next: (response) => {
+        if (response.data) {
+          this.permissionsMetadata.set(response.data);
+
+          const map: PermissionMap = {};
+          response.data.forEach(p => {
+            if (p.key && p.value !== undefined) {
+              map[p.key] = p.value;
+            }
+          });
+          this.permissionMap.set(map);
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load permissions metadata:', error);
+      }
+    });
+  }
+
+  getPermission(key: string): number {
+    return this.permissionMap()[key] ?? 0;
+  }
+
+  getPermissionsMetadata(): PermissionMetadataDto[] {
+    return this.permissionsMetadata();
+  }
+
+  hasPermission(permissionKey: string | number): boolean {
     const user = this.userService.getCurrentUser();
-    if (!user || !user.permissions) {
+    if (!user || user.permissions === undefined || user.permissions === null) {
       return false;
     }
 
@@ -48,25 +61,34 @@ export class PermissionService {
       return true;
     }
 
-    return (user.permissions & permission) === permission;
+    const permissionValue = typeof permissionKey === 'string'
+      ? this.getPermission(permissionKey)
+      : permissionKey;
+
+    return (user.permissions & permissionValue) === permissionValue;
   }
 
-  hasAnyPermission(...permissions: Permission[]): boolean {
-    return permissions.some(p => this.hasPermission(p));
+  hasAnyPermission(...permissionKeys: (string | number)[]): boolean {
+    return permissionKeys.some(p => this.hasPermission(p));
   }
 
-  hasAllPermissions(...permissions: Permission[]): boolean {
-    return permissions.every(p => this.hasPermission(p));
+  hasAllPermissions(...permissionKeys: (string | number)[]): boolean {
+    return permissionKeys.every(p => this.hasPermission(p));
   }
 
   isSuperAdmin(): boolean {
     const user = this.userService.getCurrentUser();
+
     if (!user || user.permissions === undefined || user.permissions === null) {
       return false;
     }
 
-    // Check SuperAdmin bit directly to avoid circular dependency with hasPermission()
-    return (user.permissions & Permission.SuperAdmin) === Permission.SuperAdmin;
+    // SuperAdmin bit is 2^31 = 2147483648
+    // JavaScript bitwise operators convert to 32-bit SIGNED integers, causing overflow
+    // So we check if the value is >= 2147483648 (has bit 31 set)
+    // OR check if it's negative when treated as signed (which means bit 31 is set)
+    const SUPER_ADMIN_BIT = 2147483648;
+    return user.permissions >= SUPER_ADMIN_BIT || (user.permissions | 0) < 0;
   }
 
   getUserPermissions(): number {
@@ -74,32 +96,39 @@ export class PermissionService {
     return user?.permissions ?? 0;
   }
 
-  $canReadCatalog = computed(() => this.hasPermission(Permission.CatalogRead));
-  $canWriteCatalog = computed(() => this.hasPermission(Permission.CatalogWrite));
-  $canDeleteCatalog = computed(() => this.hasPermission(Permission.CatalogDelete));
+  $canReadCatalog = computed(() => this.hasPermission('CatalogRead'));
+  $canWriteCatalog = computed(() => this.hasPermission('CatalogWrite'));
+  $canDeleteCatalog = computed(() => this.hasPermission('CatalogDelete'));
 
-  $canReadEnrollment = computed(() => this.hasPermission(Permission.EnrollmentRead));
-  $canWriteEnrollment = computed(() => this.hasPermission(Permission.EnrollmentWrite));
-  $canApproveEnrollment = computed(() => this.hasPermission(Permission.EnrollmentApprove));
-  $canDeleteEnrollment = computed(() => this.hasPermission(Permission.EnrollmentDelete));
+  $canReadEnrollment = computed(() => this.hasPermission('EnrollmentRead'));
+  $canWriteEnrollment = computed(() => this.hasPermission('EnrollmentWrite'));
+  $canApproveEnrollment = computed(() => this.hasPermission('EnrollmentApprove'));
+  $canDeleteEnrollment = computed(() => this.hasPermission('EnrollmentDelete'));
 
-  $canReadAudit = computed(() => this.hasPermission(Permission.AuditRead));
+  $canReadAudit = computed(() => this.hasPermission('AuditRead'));
 
-  $canReadUser = computed(() => this.hasPermission(Permission.UserRead));
-  $canWriteUser = computed(() => this.hasPermission(Permission.UserWrite));
-  $canDeleteUser = computed(() => this.hasPermission(Permission.UserDelete));
-  $canManageRoles = computed(() => this.hasPermission(Permission.UserManageRoles));
+  $canReadUser = computed(() => this.hasPermission('UserRead'));
+  $canWriteUser = computed(() => this.hasPermission('UserWrite'));
+  $canDeleteUser = computed(() => this.hasPermission('UserDelete'));
+  $canManageRoles = computed(() => this.hasPermission('UserManageRoles'));
+
+  $canReadRole = computed(() => this.hasPermission('RoleRead'));
+  $canWriteRole = computed(() => this.hasPermission('RoleWrite'));
+  $canDeleteRole = computed(() => this.hasPermission('RoleDelete'));
+
+  $canReadAttendance = computed(() => this.hasPermission('AttendanceRead'));
+  $canWriteAttendance = computed(() => this.hasPermission('AttendanceWrite'));
 
   $canAccessAdminDashboard = computed(() =>
     this.hasAnyPermission(
-      Permission.UserRead,
-      Permission.UserWrite,
-      Permission.CatalogRead,
-      Permission.CatalogWrite,
-      Permission.EnrollmentRead,
-      Permission.EnrollmentWrite,
-      Permission.AuditRead,
-      Permission.SuperAdmin
+      'UserRead',
+      'UserWrite',
+      'CatalogRead',
+      'CatalogWrite',
+      'EnrollmentRead',
+      'EnrollmentWrite',
+      'AuditRead',
+      'SuperAdmin'
     )
   );
 }

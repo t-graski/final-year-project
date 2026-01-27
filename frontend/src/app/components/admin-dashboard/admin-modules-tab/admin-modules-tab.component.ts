@@ -7,7 +7,6 @@ import {AdminModuleDto} from '../../../api/model/adminModuleDto';
 import {AdminCourseDto} from '../../../api/model/adminCourseDto';
 import {DynamicTableComponent, TableColumn, TableAction} from '../../dynamic-table/dynamic-table.component';
 import {FormsModule} from '@angular/forms';
-import {Permission} from '../../../services/permission.service';
 import {HasPermissionDirective} from '../../../directives/has-permission.directive';
 
 @Component({
@@ -20,8 +19,6 @@ import {HasPermissionDirective} from '../../../directives/has-permission.directi
 export class AdminModulesTabComponent implements OnInit {
   private readonly adminCatalogService = inject(AdminCatalogService);
   private readonly snackbarService = inject(SnackbarService);
-
-  protected readonly Permission = Permission;
 
   courses = input.required<AdminCourseDto[]>();
 
@@ -72,25 +69,25 @@ export class AdminModulesTabComponent implements OnInit {
       icon: 'visibility',
       label: 'View Details',
       handler: (module) => this.showModuleDetails.set(module.id!),
-      requiredPermission: Permission.CatalogRead
+      requiredPermission: 'CatalogRead'
     },
     {
       icon: 'people',
       label: 'View Enrolled Students',
       handler: (module) => this.viewModuleEnrollments(module.id!),
-      requiredPermission: Permission.EnrollmentRead
+      requiredPermission: 'EnrollmentRead'
     },
     {
       icon: 'edit',
       label: 'Edit Module',
       handler: (module) => this.editModule(module),
-      requiredPermission: Permission.CatalogWrite
+      requiredPermission: 'CatalogWrite'
     },
     {
       icon: 'content_copy',
       label: 'Clone Module',
       handler: (module) => this.cloneModule(module),
-      requiredPermission: Permission.CatalogWrite
+      requiredPermission: 'CatalogWrite'
     },
     {
       divider: true, icon: '', label: '', handler: () => {
@@ -101,7 +98,7 @@ export class AdminModulesTabComponent implements OnInit {
       label: 'Delete Module',
       danger: true,
       handler: (module) => this.deleteModule(module.id!),
-      requiredPermission: Permission.CatalogDelete
+      requiredPermission: 'CatalogDelete'
     }
   ];
 

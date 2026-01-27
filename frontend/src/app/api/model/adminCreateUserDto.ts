@@ -7,7 +7,6 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { SystemRole } from './systemRole';
 
 
 export interface AdminCreateUserDto { 
@@ -16,9 +15,6 @@ export interface AdminCreateUserDto {
     firstName?: string | null;
     lastName?: string | null;
     isActive?: boolean;
-    role?: SystemRole;
+    roleId?: string | null;
 }
-export namespace AdminCreateUserDto {
-}
-
 

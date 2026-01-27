@@ -13,7 +13,9 @@ import {BASE_PATH} from './api';
 import {environment} from './api/auth/environment';
 import {AppAuthService} from './api/auth/app-auth.service';
 import {UserService} from './services/user.service';
-import {catchError, of} from 'rxjs';
+import {PermissionService} from './services/permission.service';
+import {RoleService} from './services/role.service';
+import {catchError, of, tap} from 'rxjs';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,10 +26,19 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     {
       provide: APP_INITIALIZER,
-      useFactory: (authService: AppAuthService, userService: UserService) => () => {
+      useFactory: (
+        authService: AppAuthService,
+        userService: UserService,
+        permissionService: PermissionService,
+        roleService: RoleService
+      ) => () => {
         const token = authService.getAccessToken();
         if (token) {
           return userService.loadCurrentUser().pipe(
+            tap(() => {
+              permissionService.loadPermissions();
+              roleService.loadRoles();
+            }),
             catchError(() => {
               authService.logout();
               return of(null);
@@ -36,7 +47,7 @@ export const appConfig: ApplicationConfig = {
         }
         return of(null);
       },
-      deps: [AppAuthService, UserService],
+      deps: [AppAuthService, UserService, PermissionService, RoleService],
       multi: true
     }
   ]

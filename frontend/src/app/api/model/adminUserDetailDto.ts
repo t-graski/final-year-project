@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { RoleDto } from './roleDto';
 import { StaffMiniDto } from './staffMiniDto';
 import { StudentMiniDto } from './studentMiniDto';
 
@@ -18,7 +19,7 @@ export interface AdminUserDetailDto {
     lastName?: string | null;
     isActive?: boolean;
     permissions?: number;
-    roles?: Array<number> | null;
+    roles?: Array<RoleDto> | null;
     student?: StudentMiniDto;
     staff?: StaffMiniDto;
     createdAtUtc?: string;

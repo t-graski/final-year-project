@@ -6,7 +6,6 @@ import {SnackbarService} from '../../../services/snackbar.service';
 import {AdminCourseDto} from '../../../api';
 import {DynamicTableComponent, TableColumn, TableAction} from '../../dynamic-table/dynamic-table.component';
 import {FormsModule} from '@angular/forms';
-import {Permission} from '../../../services/permission.service';
 import {HasPermissionDirective} from '../../../directives/has-permission.directive';
 
 @Component({
@@ -19,8 +18,6 @@ import {HasPermissionDirective} from '../../../directives/has-permission.directi
 export class AdminCoursesTabComponent implements OnInit {
   private readonly adminCatalogService = inject(AdminCatalogService);
   private readonly snackbarService = inject(SnackbarService);
-
-  protected readonly Permission = Permission;
 
   $isLoading = signal(false);
   $courses = signal<AdminCourseDto[]>([]);
@@ -52,25 +49,25 @@ export class AdminCoursesTabComponent implements OnInit {
       icon: 'visibility',
       label: 'View Details',
       handler: (course) => this.$showCourseDetails.set(course.id!),
-      requiredPermission: Permission.CatalogRead
+      requiredPermission: 'CatalogRead'
     },
     {
       icon: 'people',
       label: 'View Enrolled Students',
       handler: (course) => this.viewCourseEnrollments(course.id!),
-      requiredPermission: Permission.EnrollmentRead
+      requiredPermission: 'EnrollmentRead'
     },
     {
       icon: 'edit',
       label: 'Edit Course',
       handler: (course) => this.editCourse(course),
-      requiredPermission: Permission.CatalogWrite
+      requiredPermission: 'CatalogWrite'
     },
     {
       icon: 'content_copy',
       label: 'Clone Course',
       handler: (course) => this.cloneCourse(course),
-      requiredPermission: Permission.CatalogWrite
+      requiredPermission: 'CatalogWrite'
     },
     {
       divider: true, icon: '', label: '', handler: () => {
@@ -81,7 +78,7 @@ export class AdminCoursesTabComponent implements OnInit {
       label: 'Delete Course',
       danger: true,
       handler: (course) => this.deleteCourse(course.id!),
-      requiredPermission: Permission.CatalogDelete
+      requiredPermission: 'CatalogDelete'
     }
   ];
 

@@ -11,6 +11,8 @@ api/auth.service.ts
 api/enrollmentQueries.service.ts
 api/enrollments.service.ts
 api/me.service.ts
+api/permission.service.ts
+api/role.service.ts
 api/user.service.ts
 configuration.ts
 encoder.ts
@@ -42,6 +44,7 @@ model/courseEnrollmentRowDtoIReadOnlyListApiResponse.ts
 model/courseEnrollmentStatus.ts
 model/createCourseDto.ts
 model/createModuleDto.ts
+model/createRoleDto.ts
 model/createUserDto.ts
 model/enrollInCourseDto.ts
 model/enrollInModuleDto.ts
@@ -55,7 +58,13 @@ model/moduleEnrollmentRowDto.ts
 model/moduleEnrollmentRowDtoIReadOnlyListApiResponse.ts
 model/moduleEnrollmentStatus.ts
 model/objectApiResponse.ts
+model/permissionMetadataDto.ts
+model/permissionMetadataDtoIReadOnlyListApiResponse.ts
 model/registerDto.ts
+model/role.ts
+model/roleDto.ts
+model/roleDtoApiResponse.ts
+model/roleDtoIReadOnlyListApiResponse.ts
 model/setCourseEnrollmentStatusDto.ts
 model/setModuleEnrollmentStatusDto.ts
 model/setUserActiveDto.ts
@@ -72,6 +81,7 @@ model/studentModuleHistoryRowDto.ts
 model/systemRole.ts
 model/updateCourseDto.ts
 model/updateModuleDto.ts
+model/updateRoleDto.ts
 model/userDetailDto.ts
 model/userDetailDtoApiResponse.ts
 model/userSummaryDto.ts
