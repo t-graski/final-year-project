@@ -31,9 +31,4 @@ public enum Permission : long
     SystemBootstrap = 1L << 30,
 
     SuperAdmin = 1L << 31,
-
-    ManageUsers = UserWrite | UserDelete | UserManageRoles,
-    ManageStudents = EnrollmentWrite | EnrollmentApprove | EnrollmentDelete,
-    ManageCourses = CatalogRead | CatalogWrite | CatalogDelete,
-    ManageModules = CatalogRead | CatalogWrite | CatalogDelete,
 }

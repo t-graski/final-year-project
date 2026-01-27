@@ -6,7 +6,9 @@ using backend.models;
 using backend.models.@base;
 using backend.services.interfaces;
 using Microsoft.EntityFrameworkCore;
+
 namespace backend.services.implementations;
+
 public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser currentUser) : IUserService
 {
     public async Task<AuthResultDto> RegisterAsync(RegisterDto dto)
@@ -17,6 +19,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             throw new AppException(409, "EMAIL_EXISTS", "Email already exists.");
         }
+
         // Map SystemRole to role key
         var roleKey = dto.Role switch
         {
@@ -30,6 +33,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             throw new AppException(500, "ROLE_NOT_FOUND", $"System role '{roleKey}' not found. Please run bootstrap.");
         }
+
         var hash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
         var user = new User
         {
@@ -69,10 +73,12 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
                 db.Staff.Add(staff);
                 break;
         }
+
         await db.SaveChangesAsync();
         var token = tokens.CreateAccessToken(user);
         return new AuthResultDto(user.Id, user.Email, user.FirstName, user.LastName, user.Permissions, token);
     }
+
     public async Task<AuthResultDto> LoginAsync(LoginDto dto)
     {
         var email = dto.Email.Trim().ToLowerInvariant();
@@ -84,14 +90,17 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             throw new AppException(401, "INVALID_CREDENTIALS", "Invalid email or password.");
         }
+
         if (!user.IsActive)
         {
             throw new AppException(403, "USER_DISABLED", "User is disabled.");
         }
+
         if (user.LockOutUntilUtc.HasValue && user.LockOutUntilUtc.Value > DateTimeOffset.UtcNow)
         {
             throw new AppException(403, "LOCKED_OUT", "User is temporarily locked out.");
         }
+
         var ok = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
         if (!ok)
         {
@@ -101,9 +110,11 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
                 user.LockOutUntilUtc = DateTimeOffset.UtcNow.AddMinutes(10);
                 user.FailedLoginCount = 0;
             }
+
             await db.SaveChangesAsync();
             throw new AppException(401, "INVALID_CREDENTIALS", "Invalid email or password");
         }
+
         user.FailedLoginCount = 0;
         user.LockOutUntilUtc = null;
         user.LastLoginAtUtc = DateTimeOffset.UtcNow;
@@ -111,8 +122,10 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         var token = tokens.CreateAccessToken(user);
         return new AuthResultDto(user.Id, user.Email, user.FirstName, user.LastName, user.Permissions, token);
     }
+
     public async Task<UserDetailDto> GetMeAsync(Guid meId)
         => await GetByIdAsync(meId);
+
     public async Task<PagedDto<UserSummaryDto>> GetUsersAsync(int page, int pageSize)
     {
         page = page <= 0 ? 1 : page;
@@ -135,6 +148,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
             .ToListAsync();
         return new PagedDto<UserSummaryDto>(items, page, pageSize, total);
     }
+
     public async Task<UserDetailDto> GetByIdAsync(Guid userId)
     {
         var user = await db.Users.AsNoTracking()
@@ -146,6 +160,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             throw new AppException(404, "USER_NOT_FOUND", "User does not exist.");
         }
+
         var roles = user.Roles
             .Where(r => r is { IsDeleted: false, Role.IsDeleted: false })
             .Select(r => r.Role)
@@ -162,10 +177,12 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
             roles
         );
     }
+
     public Task<UserDetailDto> CreateAsync(CreateUserDto dto)
     {
         throw new NotImplementedException();
     }
+
     public async Task SetStatusAsync(Guid userId, bool isActive)
     {
         var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -173,9 +190,11 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             throw new AppException(404, "USER_NOT_FOUND", "User does not exist.");
         }
+
         user.IsActive = isActive;
         await db.SaveChangesAsync();
     }
+
     public async Task SetPermissionsAsync(Guid userId, long permissions)
     {
         var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -183,9 +202,11 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             throw new AppException(404, "USER_NOT_FOUND", "User does not exist.");
         }
+
         user.Permissions = permissions;
         await db.SaveChangesAsync();
     }
+
     public async Task AssignRoleAsync(Guid userId, SystemRole role)
     {
         var actorId = currentUser.UserId
@@ -198,66 +219,80 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
             SystemRole.Admin => "admin",
             _ => "student"
         };
+
         var roleEntity = await db.Roles.FirstOrDefaultAsync(r => r.Key == roleKey && !r.IsDeleted);
+
         if (roleEntity is null)
         {
             throw new AppException(404, "ROLE_NOT_FOUND", $"Role '{roleKey}' not found.");
         }
+
         var actor = await db.Users
             .Include(u => u.Roles)
             .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Id == actorId);
+
         if (actor is null)
         {
             throw new AppException(401, "ACTOR_NOT_FOUND", "Authentication user not found.");
         }
+
         var target = await db.Users
             .Include(u => u.Roles)
             .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Id == userId);
+
         if (target is null)
         {
             throw new AppException(404, "USER_NOT_FOUND", "Target user does not exist.");
         }
+
         var actorHighest = GetHighestActiveRole(actor);
         var targetHighest = GetHighestActiveRole(target);
         var actorHighestRank = actorHighest?.Rank ?? 0;
         var targetHighestRank = targetHighest?.Rank ?? 0;
         var newRoleRank = roleEntity.Rank;
         var actorIsAdmin = actorHighest?.Key == "admin";
+
         // Rule #1: cannot modify someone higher than self
         if (targetHighestRank > actorHighestRank)
         {
             throw new AppException(403, "ROLE_TARGET_HIGHER",
                 "You cannot modify a user with a higher role than yours.");
         }
+
         // Rule #2: cannot assign role higher than own highest role
         if (newRoleRank > actorHighestRank)
         {
             throw new AppException(403, "ROLE_ASSIGN_HIGHER_THAN_SELF",
                 "You cannot assign a role higher than your own.");
         }
+
         // Rule #3: self can't give self a higher role
         if (actorId == userId && newRoleRank > actorHighestRank)
         {
             throw new AppException(403, "ROLE_SELF_PROMOTION", "You cannot assign yourself a higher role.");
         }
+
         // Rule #4: only admins can give same-level role
         if (newRoleRank == actorHighestRank && !actorIsAdmin)
         {
             throw new AppException(403, "ROLE_SAME_LEVEL_ADMIN_ONLY",
                 "Only admins can assign a role at their own level.");
         }
+
         // Rule #5: admins can give other users admin
         if (roleEntity.Key == "admin" && !actorIsAdmin)
         {
             throw new AppException(403, "ROLE_ADMIN_REQUIRED", "Only admins can assign the admin role.");
         }
+
         var active = target.Roles.FirstOrDefault(r => r.RoleId == roleEntity.Id && !r.IsDeleted);
         if (active is not null)
         {
             return;
         }
+
         var deleted = target.Roles.FirstOrDefault(r => r.RoleId == roleEntity.Id && r.IsDeleted);
         if (deleted is not null)
         {
@@ -269,9 +304,11 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             target.Roles.Add(new UserRole { UserId = userId, RoleId = roleEntity.Id });
         }
+
         target.Permissions = (long)ComputePermissionsFromRoles(target);
         await db.SaveChangesAsync();
     }
+
     public async Task RemoveRoleAsync(Guid userId, SystemRole role)
     {
         var actorId = currentUser.UserId
@@ -289,6 +326,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             throw new AppException(404, "ROLE_NOT_FOUND", $"Role '{roleKey}' not found.");
         }
+
         var actor = await db.Users
             .Include(u => u.Roles)
             .ThenInclude(ur => ur.Role)
@@ -297,6 +335,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             throw new AppException(401, "ACTOR_NOT_FOUND", "Authentication user not found.");
         }
+
         var target = await db.Users
             .Include(u => u.Roles)
             .ThenInclude(ur => ur.Role)
@@ -305,6 +344,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             throw new AppException(404, "USER_NOT_FOUND", "Target user does not exist.");
         }
+
         var actorHighest = GetHighestActiveRole(actor);
         var targetHighest = GetHighestActiveRole(target);
         var actorHighestRank = actorHighest?.Rank ?? 0;
@@ -317,21 +357,25 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
             throw new AppException(403, "ROLE_TARGET_HIGHER",
                 "You cannot modify a user with a higher role than yours.");
         }
+
         // Rule #2: cannot remove role higher than own highest role
         if (removeRoleRank > actorHighestRank)
         {
             throw new AppException(403, "ROLE_REMOVE_HIGHER_THAN_SELF",
                 "You cannot remove a role higher than your own.");
         }
+
         // Rule #3: self can't remove self the highest role
         if (actorId == userId && targetHighest?.Id == roleEntity.Id)
         {
             throw new AppException(403, "ROLE_SELF_LOCKOUT", "You cannot remove your own highest role.");
         }
+
         if (roleEntity.Key == "admin" && !actorIsAdmin)
         {
             throw new AppException(403, "ROLE_ADMIN_REQUIRED", "Only admins can remove the admin role.");
         }
+
         if (roleEntity.Key == "admin")
         {
             var adminRole = await db.Roles.FirstAsync(r => r.Key == "admin");
@@ -346,15 +390,18 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
                 throw new AppException(403, "ROLE_LAST_ADMIN", "You cannot remove the last admin.");
             }
         }
+
         var active = target.Roles.FirstOrDefault(r => r.RoleId == roleEntity.Id && !r.IsDeleted);
         if (active is null)
         {
             return;
         }
+
         active.IsDeleted = true;
         target.Permissions = (long)ComputePermissionsFromRoles(target);
         await db.SaveChangesAsync();
     }
+
     private static Role? GetHighestActiveRole(User user)
     {
         var roles = user.Roles
@@ -371,8 +418,10 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
                 best = role;
             }
         }
+
         return best;
     }
+
     public static Permission ComputePermissionsFromRoles(User user)
     {
         var roles = user.Roles
@@ -382,6 +431,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         var effectivePerms = PermissionCalculator.ComputeEffective(roles);
         return (Permission)effectivePerms;
     }
+
     private async Task<string> GenerateStudentNumber()
     {
         var lastStudent = await db.Students
@@ -391,9 +441,11 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             return "w1000001";
         }
+
         var lastNumber = int.Parse(lastStudent.StudentNumber[1..]);
         return $"w{lastNumber + 1}";
     }
+
     private async Task<string> GenerateStaffNumber()
     {
         var lastStaff = await db.Staff
@@ -403,6 +455,7 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
         {
             return "s1001";
         }
+
         var lastNumber = int.Parse(lastStaff.StaffNumber[1..]);
         return $"s{lastNumber + 1}";
     }

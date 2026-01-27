@@ -51,7 +51,7 @@
           </div>
 
           <div class="permissions-grid">
-            @for (permission of $newRole().permissions; track permission.key) {
+            @for (permission of $newRole().permissions; track permission.value) {
               <label class="permission-checkbox">
                 <input
                   type="checkbox"
@@ -105,7 +105,7 @@
           </div>
 
           <div class="permissions-grid">
-            @for (permission of $editRole().permissions; track permission.key) {
+            @for (permission of $editRole().permissions; track permission.value) {
               <label class="permission-checkbox">
                 <input
                   type="checkbox"
@@ -142,6 +142,8 @@
       <div class="modal-body">
         @for (role of $roles(); track role.id) {
           @if (role.id === $showRoleDetails()) {
+            @let permDetails = getPermissionDetails(role.permissions || 0);
+
             <div class="detail-row">
               <span class="detail-label">Role ID:</span>
               <span class="detail-value">{{ role.id }}</span>
@@ -154,14 +156,16 @@
               <span class="detail-label">Permission Value:</span>
               <span class="detail-value">{{ role.permissions }}</span>
             </div>
-            <div class="detail-row">
+            <div class="detail-row detail-row--column">
               <span class="detail-label">Permissions:</span>
               <div class="detail-value">
-                <div class="permissions-list">
-                  @for (perm of getPermissionNames(role.permissions || 0); track perm) {
-                    <span class="permission-badge">{{ perm }}</span>
+                <div class="permissions-detail-list">
+                  @for (perm of permDetails; track perm.key) {
+                    <div class="permission-detail-item">
+                      <span class="permission-detail-name">{{ perm.key }}</span>
+                    </div>
                   }
-                  @if (getPermissionNames(role.permissions || 0).length === 0) {
+                  @if (permDetails.length === 0) {
                     <span class="no-permissions">No permissions assigned</span>
                   }
                 </div>

@@ -13,14 +13,14 @@ public class AdminCatalogController(IAdminCatalogService catalog) : ControllerBa
 {
     [HttpGet("courses")]
     [Authorize]
-    [RequirePermission(Permission.CatalogWrite)]
+    [RequirePermission(Permission.CatalogRead)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AdminCourseDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ListCourses([FromQuery] string? q = null)
         => Ok(ApiResponse<IReadOnlyList<AdminCourseDto>>.Ok(await catalog.ListCoursesAsync(q)));
 
     [HttpGet("courses/{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.CatalogWrite)]
+    [RequirePermission(Permission.CatalogRead)]
     [ProducesResponseType(typeof(ApiResponse<AdminCourseDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCourse(Guid id)
         => Ok(ApiResponse<AdminCourseDetailDto>.Ok(await catalog.GetCourseAsync(id)));
@@ -54,14 +54,14 @@ public class AdminCatalogController(IAdminCatalogService catalog) : ControllerBa
 
     [HttpGet("courses/{courseId:guid}/modules")]
     [Authorize]
-    [RequirePermission(Permission.CatalogWrite)]
+    [RequirePermission(Permission.CatalogRead)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AdminModuleDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ListModules(Guid courseId)
         => Ok(ApiResponse<IReadOnlyList<AdminModuleDto>>.Ok(await catalog.ListModulesByCourseAsync(courseId)));
 
     [HttpGet("modules/{id:guid}")]
     [Authorize]
-    [RequirePermission(Permission.CatalogWrite)]
+    [RequirePermission(Permission.CatalogRead)]
     [ProducesResponseType(typeof(ApiResponse<AdminModuleDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetModule(Guid id)
         => Ok(ApiResponse<AdminModuleDto>.Ok(await catalog.GetModuleAsync(id)));

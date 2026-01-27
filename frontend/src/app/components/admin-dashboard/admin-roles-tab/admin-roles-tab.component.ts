@@ -55,10 +55,10 @@ export class AdminRolesTab implements OnInit {
     {key: 'name', label: 'Name', sortable: true, visible: true},
     {
       key: 'permissions',
-      label: 'Permission Count',
+      label: 'Permission Value',
       sortable: true,
       visible: true,
-      render: (role) => this.getPermissionCount(role.permissions || 0).toString()
+      render: (role) => (role.permissions || 0).toString()
     }
   ];
 
@@ -76,7 +76,8 @@ export class AdminRolesTab implements OnInit {
       requiredPermission: 'RoleWrite'
     },
     {
-      divider: true, icon: '', label: '', handler: () => {}
+      divider: true, icon: '', label: '', handler: () => {
+      }
     },
     {
       icon: 'delete',
@@ -125,6 +126,25 @@ export class AdminRolesTab implements OnInit {
       value = value >>> 1;
     }
     return count;
+  }
+
+  getPermissionBits(permissionValue: number): number[] {
+    const metadata = this.permissionService.getPermissionsMetadata();
+
+    return metadata
+      .filter(p => {
+        const pValue = p.value || 0;
+        if (pValue === 0) return false;
+
+        // Special handling for SuperAdmin (2^31 = 2147483648)
+        if (pValue === 2147483648) {
+          return permissionValue >= 2147483648 || (permissionValue | 0) < 0;
+        }
+
+        return (permissionValue & pValue) === pValue;
+      })
+      .map(p => p.bit || 0)
+      .sort((a, b) => a - b);
   }
 
   getAvailablePermissions(): PermissionCheckbox[] {
@@ -253,17 +273,26 @@ export class AdminRolesTab implements OnInit {
     this.$showRoleDetails.set(null);
   }
 
-  getPermissionNames(permissionValue: number): string[] {
+  getPermissionDetails(permissionValue: number): Array<{ key: string, bit: number }> {
     const metadata = this.permissionService.getPermissionsMetadata();
+
     return metadata
       .filter(p => {
         const pValue = p.value || 0;
-        // Skip permissions with no value
         if (pValue === 0) return false;
-        // Check if all bits of this permission are set in permissionValue
+
+        // Special handling for SuperAdmin (2^31 = 2147483648)
+        // JavaScript bitwise operators don't work correctly with bit 31 due to signed integer conversion
+        if (pValue === 2147483648) {
+          return permissionValue >= 2147483648 || (permissionValue | 0) < 0;
+        }
+
         return (permissionValue & pValue) === pValue;
       })
-      .map(p => p.key || 'Unknown');
+      .map(p => ({
+        key: p.key || 'Unknown',
+        bit: p.bit || 0
+      }));
   }
 
   toggleAllPermissions(checked: boolean): void {
