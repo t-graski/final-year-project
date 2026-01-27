@@ -29,7 +29,7 @@ public class AdminEnrollmentService(AppDbContext db) : IAdminEnrollmentService
 
         if (activeExists)
         {
-            throw new AppException(409, "ACTIVE_COURSE_EXISTS", "Student already has an active course enrolment.");
+            throw new AppException(409, "ACTIVE_COURSE_EXISTS", "Student already has an active course enrollment.");
         }
 
         db.StudentCourseEnrollments.Add(new StudentCourseEnrollment

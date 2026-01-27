@@ -3,6 +3,7 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c19b1104_002Dfe60_002D4490_002Db4cd_002D1b8b3552b6ed/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="UserServiceAuthTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;xUnit::FD81B478-D2A3-606F-6CE5-DBA964BE75B5::net10.0::Backend.IntegrationTests.UserServiceAuthTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::FD81B478-D2A3-606F-6CE5-DBA964BE75B5::net10.0::Backend.IntegrationTests.UserServiceTests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	</wpf:ResourceDictionary>
