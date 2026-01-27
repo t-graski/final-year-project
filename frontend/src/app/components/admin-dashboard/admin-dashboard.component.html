@@ -31,6 +31,15 @@
             <span>Modules</span>
           </button>
         }
+        @if (permissionService.$canReadRole() || permissionService.isSuperAdmin()) {
+          <button
+            class="sidebar-item"
+            [class.sidebar-item--active]="$currentView() === 'roles'"
+            (click)="setView('roles')">
+            <mat-icon fontIcon="admin_panel_settings"></mat-icon>
+            <span>Roles</span>
+          </button>
+        }
 
         @if (permissionService.$canReadCatalog()
         || permissionService.$canReadEnrollment()
@@ -106,6 +115,10 @@
             [courses]="$courses()"
             (viewEnrollments)="handleViewModuleEnrollments($event)"
           ></app-admin-modules-tab>
+        }
+
+        @if ($currentView() === 'roles') {
+          <app-admin-roles-tab></app-admin-roles-tab>
         }
 
         @if ($currentView() === 'enroll-course') {

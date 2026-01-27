@@ -13,7 +13,6 @@ namespace backend.controllers;
 public class PermissionController(IRoleService roleService) : ControllerBase
 {
     [HttpGet]
-    [RequirePermission(Permission.RoleRead)]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<PermissionMetadataDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPermissions()
     {

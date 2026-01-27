@@ -16,9 +16,18 @@ import {AdminEnrollCourseTabComponent} from './admin-enroll-course-tab/admin-enr
 import {AdminEnrollModuleTabComponent} from './admin-enroll-module-tab/admin-enroll-module-tab.component';
 import {AdminAuditTabComponent} from './admin-audit-tab/admin-audit-tab.component';
 import {AdminLoginAuditTab} from './admin-login-audit-tab/admin-login-audit-tab';
+import {AdminRolesTab} from './admin-roles-tab/admin-roles-tab.component';
 import {PermissionService} from '../../services/permission.service';
 
-type AdminView = 'users' | 'courses' | 'modules' | 'enroll-course' | 'enroll-module' | 'audit' | 'login-audit';
+type AdminView =
+  'users'
+  | 'courses'
+  | 'modules'
+  | 'roles'
+  | 'enroll-course'
+  | 'enroll-module'
+  | 'audit'
+  | 'login-audit';
 type EnrollmentMode = 'user' | 'course' | 'module';
 
 @Component({
@@ -31,6 +40,7 @@ type EnrollmentMode = 'user' | 'course' | 'module';
     AdminUsersTabComponent,
     AdminCoursesTabComponent,
     AdminModulesTabComponent,
+    AdminRolesTab,
     AdminEnrollCourseTabComponent,
     AdminEnrollModuleTabComponent,
     AdminAuditTabComponent,
@@ -65,19 +75,38 @@ export class AdminDashboardComponent implements OnInit {
     if (savedView) {
       this.setView(savedView);
     } else {
-      this.setView('users');
+      this.setViewToFirstAvailable();
     }
   }
 
   checkAdminAccess(): void {
+    if (this.permissionService.isSuperAdmin()) {
+      return;
+    }
+
     const currentUser = this.userService.getCurrentUser();
     const hasAdminRole = currentUser?.roles?.some(role =>
       role.key?.toLowerCase() === 'admin'
     ) || false;
 
-    if (!hasAdminRole) {
-      void this.router.navigateByUrl('/dashboard');
+    if (hasAdminRole) {
+      return;
     }
+
+    if (this.permissionService.hasAnyPermission(
+      'UserRead',
+      'UserWrite',
+      'CatalogRead',
+      'CatalogWrite',
+      'EnrollmentRead',
+      'EnrollmentWrite',
+      'AuditRead',
+      'RoleRead'
+    )) {
+      return;
+    }
+
+    void this.router.navigateByUrl('/dashboard');
   }
 
   setView(view: AdminView): void {
@@ -94,6 +123,8 @@ export class AdminDashboardComponent implements OnInit {
       case 'modules':
         this.loadCourses();
         break;
+      case 'roles':
+        break;
       case 'enroll-course':
       case 'enroll-module':
         this.loadUsers();
@@ -105,6 +136,23 @@ export class AdminDashboardComponent implements OnInit {
       case 'login-audit':
         // Login audit tab loads its own data
         break;
+    }
+  }
+
+  setViewToFirstAvailable(): void {
+    // Check permissions in order and set to first available view
+    if (this.permissionService.$canReadUser() || this.permissionService.isSuperAdmin()) {
+      this.setView('users');
+    } else if (this.permissionService.$canReadCatalog() || this.permissionService.isSuperAdmin()) {
+      this.setView('courses');
+    } else if (this.permissionService.$canReadRole() || this.permissionService.isSuperAdmin()) {
+      this.setView('roles');
+    } else if (this.permissionService.$canWriteEnrollment() || this.permissionService.isSuperAdmin()) {
+      this.setView('enroll-course');
+    } else if (this.permissionService.$canReadAudit() || this.permissionService.isSuperAdmin()) {
+      this.setView('audit');
+    } else {
+      this.setView('users');
     }
   }
 
