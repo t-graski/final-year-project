@@ -12,6 +12,9 @@
 export interface RoleDto { 
     id?: string;
     name?: string | null;
+    key?: string | null;
+    rank?: number;
+    isSystem?: boolean;
     permissions?: number;
 }
 

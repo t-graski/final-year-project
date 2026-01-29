@@ -163,7 +163,14 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
 
         var roles = user.Roles
             .Where(r => r is { IsDeleted: false, Role.IsDeleted: false })
-            .Select(r => r.Role)
+            .Select(r => new RoleDto(
+                r.Role.Id,
+                r.Role.Name,
+                r.Role.Key,
+                r.Role.Rank,
+                r.Role.IsSystem,
+                r.Role.Permissions
+            ))
             .ToList();
         return new UserDetailDto(
             user.Id,

@@ -41,6 +41,9 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
                 u.Roles.Where(r => !r.IsDeleted).Select(r => new RoleDto(
                     r.Role.Id,
                     r.Role.Name,
+                    r.Role.Key,
+                    r.Role.Rank,
+                    r.Role.IsSystem,
                     r.Role.Permissions
                 )).ToList(),
                 u.Student != null && !u.Student.IsDeleted
@@ -65,6 +68,9 @@ public sealed class AdminUserService(AppDbContext db, ICurrentUser current) : IA
                 u.Roles.Where(r => !r.IsDeleted).Select(r => new RoleDto(
                     r.Role.Id,
                     r.Role.Name,
+                    r.Role.Key,
+                    r.Role.Rank,
+                    r.Role.IsSystem,
                     r.Role.Permissions
                 )).ToList(),
                 u.Student != null && !u.Student.IsDeleted

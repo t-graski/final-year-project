@@ -121,7 +121,7 @@ export class AdminUsersTabComponent implements OnInit {
       label: 'Delete User',
       danger: true,
       handler: (user) => this.deleteUser(user.id!),
-      requiredPermission: "UserDelete"
+      requiredPermission: "UserDelete",
     }
   ];
 

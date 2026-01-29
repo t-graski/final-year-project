@@ -40,7 +40,6 @@ export * from './objectApiResponse';
 export * from './permissionMetadataDto';
 export * from './permissionMetadataDtoIReadOnlyListApiResponse';
 export * from './registerDto';
-export * from './role';
 export * from './roleDto';
 export * from './roleDtoApiResponse';
 export * from './roleDtoIReadOnlyListApiResponse';

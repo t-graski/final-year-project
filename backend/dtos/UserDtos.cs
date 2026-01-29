@@ -22,7 +22,7 @@ public record UserDetailDto(
     long Permissions,
     DateTimeOffset? CreatedAtUtc,
     DateTimeOffset? UpdatedAtUtc,
-    IEnumerable<Role> Roles
+    IEnumerable<RoleDto> Roles
 );
 
 public record CreateUserDto(string Email, string Password, string FirstName, string LastName);

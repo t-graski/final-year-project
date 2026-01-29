@@ -7,7 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { Role } from './role';
+import { RoleDto } from './roleDto';
 
 
 export interface UserDetailDto { 
@@ -19,6 +19,6 @@ export interface UserDetailDto {
     permissions?: number;
     createdAtUtc?: string | null;
     updatedAtUtc?: string | null;
-    roles?: Array<Role> | null;
+    roles?: Array<RoleDto> | null;
 }
 

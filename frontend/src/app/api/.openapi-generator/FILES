@@ -61,7 +61,6 @@ model/objectApiResponse.ts
 model/permissionMetadataDto.ts
 model/permissionMetadataDtoIReadOnlyListApiResponse.ts
 model/registerDto.ts
-model/role.ts
 model/roleDto.ts
 model/roleDtoApiResponse.ts
 model/roleDtoIReadOnlyListApiResponse.ts

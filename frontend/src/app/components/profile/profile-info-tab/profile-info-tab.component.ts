@@ -2,7 +2,8 @@
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
 import {UserService} from '../../../services/user.service';
-import {UserDetailDto, Role} from '../../../api';
+import {UserDetailDto} from '../../../api';
+import {Role} from '../../../api/model/role';
 
 interface UserInfo {
   name: string;
@@ -72,7 +73,7 @@ export class ProfileInfoTabComponent implements OnInit {
 
     // Add staff-specific info - check role.key
     if (roleObjects.some(r => r.key?.toLowerCase() === 'staff') ||
-        roleObjects.some(r => r.key?.toLowerCase() === 'admin')) {
+      roleObjects.some(r => r.key?.toLowerCase() === 'admin')) {
       info.staffNumber = 's1001'; // Mock
     }
 

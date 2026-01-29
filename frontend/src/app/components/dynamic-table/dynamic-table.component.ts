@@ -6,7 +6,7 @@ import {PermissionService} from '../../services/permission.service';
 import {ContextMenuComponent, ContextMenuAction} from '../context-menu/context-menu.component';
 
 export interface TableColumn<T = any> {
-  key: string;
+  key: keyof T | string;
   label: string;
   sortable?: boolean;
   visible?: boolean;
@@ -22,7 +22,7 @@ export interface TableAction<T = any> {
   divider?: boolean;
   requiredPermission?: string | number | (string | number)[];
   hidden?: boolean;
-  disabled?: boolean;
+  disabled?: boolean | ((item: T) => boolean);
 }
 
 @Component({
@@ -47,7 +47,7 @@ export class DynamicTableComponent<T extends Record<string, any>> {
   $reload = output<void>();
 
   $searchQuery = signal('');
-  $sortField = signal<string | null>(null);
+  $sortField = signal<keyof T | null>(null);
   $sortDirection = signal<'asc' | 'desc'>('asc');
   $showColumnSelector = signal(false);
 
@@ -61,6 +61,7 @@ export class DynamicTableComponent<T extends Record<string, any>> {
 
   // Convert TableAction to ContextMenuAction for the context menu component
   $contextMenuActions = computed<ContextMenuAction[]>(() => {
+    const item = this.$contextMenuItem();
     return this.$actions().map(action => ({
       label: action.label,
       icon: action.icon,
@@ -68,7 +69,9 @@ export class DynamicTableComponent<T extends Record<string, any>> {
       divider: action.divider,
       requiredPermission: action.requiredPermission,
       hidden: action.hidden,
-      disabled: action.disabled,
+      disabled: typeof action.disabled === 'function'
+        ? (item ? action.disabled(item) : false)
+        : action.disabled,
       action: () => this.handleAction(action)
     }));
   });

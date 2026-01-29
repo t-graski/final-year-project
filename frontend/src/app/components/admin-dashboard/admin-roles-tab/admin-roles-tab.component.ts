@@ -59,6 +59,15 @@ export class AdminRolesTab implements OnInit {
       sortable: true,
       visible: true,
       render: (role) => (role.permissions || 0).toString()
+    },
+    {key: 'rank', label: 'Rank', visible: true, sortable: true},
+    {key: 'key', label: 'Key', visible: false},
+    {
+      key: 'isSystem',
+      label: 'System Role',
+      visible: false,
+      sortable: true,
+      render: (role) => role.isSystem ? 'Yes' : 'No'
     }
   ];
 
@@ -73,7 +82,8 @@ export class AdminRolesTab implements OnInit {
       icon: 'edit',
       label: 'Edit Role',
       handler: (role) => this.openEditRoleModal(role),
-      requiredPermission: 'RoleWrite'
+      requiredPermission: 'RoleWrite',
+      disabled: (role) => role.isSystem === true
     },
     {
       divider: true, icon: '', label: '', handler: () => {
@@ -84,7 +94,8 @@ export class AdminRolesTab implements OnInit {
       label: 'Delete Role',
       danger: true,
       handler: (role) => this.deleteRole(role.id!),
-      requiredPermission: 'RoleDelete'
+      requiredPermission: 'RoleDelete',
+      disabled: (role) => role.isSystem === true
     }
   ];
 

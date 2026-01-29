@@ -19,6 +19,9 @@ public class RoleService(AppDbContext db) : IRoleService
             .Select(r => new RoleDto(
                 r.Id,
                 r.Name,
+                r.Key,
+                r.Rank,
+                r.IsSystem,
                 r.Permissions
             ))
             .ToListAsync();
@@ -34,7 +37,7 @@ public class RoleService(AppDbContext db) : IRoleService
         if (role is null)
             throw new AppException(404, "ROLE_NOT_FOUND", "Role does not exist.");
 
-        return new RoleDto(role.Id, role.Name, role.Permissions);
+        return new RoleDto(role.Id, role.Name, role.Key, role.Rank, role.IsSystem, role.Permissions);
     }
 
     public async Task<RoleDto> CreateAsync(CreateRoleDto dto)
@@ -51,7 +54,7 @@ public class RoleService(AppDbContext db) : IRoleService
         db.Roles.Add(role);
         await db.SaveChangesAsync();
 
-        return new RoleDto(role.Id, role.Name, role.Permissions);
+        return new RoleDto(role.Id, role.Name, role.Key, role.Rank, role.IsSystem, role.Permissions);
     }
 
     public async Task<RoleDto> UpdateAsync(Guid roleId, UpdateRoleDto dto)
@@ -72,7 +75,7 @@ public class RoleService(AppDbContext db) : IRoleService
         // Recompute permissions for all users with this role
         await RecomputeUsersPermissionsAsync(roleId);
 
-        return new RoleDto(role.Id, role.Name, role.Permissions);
+        return new RoleDto(role.Id, role.Name, role.Key, role.Rank, role.IsSystem, role.Permissions);
     }
 
     public async Task DeleteAsync(Guid roleId)

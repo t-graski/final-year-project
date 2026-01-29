@@ -3,6 +3,9 @@
 public record RoleDto(
     Guid Id,
     string Name,
+    string Key,
+    int Rank,
+    bool IsSystem,
     long Permissions
 );
 
