@@ -6,6 +6,10 @@ EXPOSE 5063
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+
+#RUN dotnet tool install --global dotnet-ef
+#ENV PATH="$PATH:/root/.dotnet/tools"
+
 COPY ["backend.csproj", "./"]
 RUN dotnet restore "backend.csproj"
 COPY . .
