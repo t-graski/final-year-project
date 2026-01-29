@@ -29,8 +29,9 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ??
-                ["http://localhost:4200", "http://128.140.107.95"]
+                ["http://localhost:4200", "http://128.140.107.95:4200"]
             )
+            .AllowCredentials()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -136,7 +137,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-app.UseCors("Frontend");
 
 if (!app.Environment.IsDevelopment())
 {
@@ -158,6 +158,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 
 app.UseMiddleware<DbActorMiddleware>();
+
+app.UseCors("Frontend");
 
 app.UseAuthorization();
 
