@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,11 +21,16 @@ var jwt = builder.Configuration.GetSection("Jwt");
 var rawKey = jwt["Key"] ?? throw new InvalidOperationException("Missing Jwt:Key");
 var keyBytes = GetKeyBytes(rawKey);
 
-builder.Services.AddCors(opts =>
+
+builder.Services.AddCors(options =>
 {
-    opts.AddPolicy("Frontend", p =>
+    options.AddPolicy("Frontend", policy =>
     {
-        p.WithOrigins("http://localhost:4200")
+        policy
+            .WithOrigins(
+                builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ??
+                ["http://localhost:4200", "http://128.140.107.95"]
+            )
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
