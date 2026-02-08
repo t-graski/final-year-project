@@ -3,7 +3,6 @@ using backend.data;
 using backend.dtos;
 using backend.errors;
 using backend.models;
-using backend.models.@base;
 using backend.services.interfaces;
 using Microsoft.EntityFrameworkCore;
 

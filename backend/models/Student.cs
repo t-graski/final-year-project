@@ -4,8 +4,8 @@ namespace backend.models;
 
 public class Student : SoftDeletableEntity<Guid>
 {
-    public Guid? UserId { get; set; }
-    public User? User { get; set; }
+    public Guid UserId { get; set; }
+    public User User { get; set; }
 
     public string StudentNumber { get; set; } = string.Empty;
 

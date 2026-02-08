@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.services.implementations;
 
-public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser currentUser) : IUserService
+public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser currentUser, IAttendanceService attendance)
+    : IUserService
 {
     public async Task<AuthResultDto> RegisterAsync(RegisterDto dto)
     {
@@ -82,10 +83,12 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
     public async Task<AuthResultDto> LoginAsync(LoginDto dto)
     {
         var email = dto.Email.Trim().ToLowerInvariant();
+
         var user = await db.Users
             .Include(u => u.Roles)
             .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Email == email);
+
         if (user is null)
         {
             throw new AppException(401, "INVALID_CREDENTIALS", "Invalid email or password.");
@@ -115,10 +118,16 @@ public class UserService(AppDbContext db, ITokenService tokens, ICurrentUser cur
             throw new AppException(401, "INVALID_CREDENTIALS", "Invalid email or password");
         }
 
+        var nowUtc = DateTimeOffset.UtcNow;
+
+        user.LastLoginAtUtc = nowUtc;
         user.FailedLoginCount = 0;
         user.LockOutUntilUtc = null;
-        user.LastLoginAtUtc = DateTimeOffset.UtcNow;
+
+        await attendance.MarkStudentAttendanceOnLoginAsync(user.Id, nowUtc);
+
         await db.SaveChangesAsync();
+
         var token = tokens.CreateAccessToken(user);
         return new AuthResultDto(user.Id, user.Email, user.FirstName, user.LastName, user.Permissions, token);
     }

@@ -24,6 +24,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
     public DbSet<StudentCourseEnrollment> StudentCourseEnrollments => Set<StudentCourseEnrollment>();
     public DbSet<StudentModuleEnrollment> StudentModuleEnrollments => Set<StudentModuleEnrollment>();
+    public DbSet<StudentAttendance> StudentAttendances => Set<StudentAttendance>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -226,6 +227,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             e.HasIndex(x => new { x.StudentId, x.ModuleId, x.AcademicYear, x.Semester })
                 .IsUnique();
+        });
+
+        // --- Student Attendance ---
+        b.Entity<StudentAttendance>(e =>
+        {
+            e.ToTable("student_attendance");
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Date).IsRequired();
+
+            e.HasOne(x => x.Student)
+                .WithMany()
+                .HasForeignKey(x => x.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasIndex(x => new { x.StudentId, x.Date }).IsUnique();
         });
     }
 

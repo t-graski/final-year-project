@@ -102,6 +102,7 @@ builder.Services.AddScoped<IEnrollmentQueryService, EnrollmentQueryService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IBootstrapService, BootstrapService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 builder.Services.AddHttpContextAccessor();
 
