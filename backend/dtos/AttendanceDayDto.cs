@@ -1,74 +1,71 @@
 ﻿namespace backend.dtos;
 
-public record AttendanceDayDto(
+public record MyAttendanceDayModuleDto(
+    Guid ModuleId,
+    string ModuleName,
+    DateTimeOffset CheckedInAtUtc
+);
+
+public record MyAttendanceDayDto(
     DateOnly Date,
-    DateTimeOffset FirstSeenAtUtc,
-    DateTimeOffset LastSeenAtUtc,
-    int LoginCount,
-    string? Note
+    int AttendedModulesCount,
+    IReadOnlyList<MyAttendanceDayModuleDto> Modules
 );
 
-public record MyAttendanceSummaryDto(
-    Guid StudentId,
-    int DaysPresent,
-    int DaysAbsent,
-    int TotalDays,
+public record MyModuleAttendanceSummaryDto(
+    Guid ModuleId,
+    string ModuleName,
+    DayOfWeek ScheduledDay,
+    DateOnly RunsFrom,
+    DateOnly RunsTo,
+    int ExpectedSessions,
+    int AttendedSessions,
+    double? AttendancePercent
+);
+
+public record MyAttendanceOverviewDto(
     DateOnly From,
-    DateOnly To
+    DateOnly To,
+    int ExpectedSessionsTotal,
+    int AttendedSessionsTotal,
+    double? OverallPercent,
+    IReadOnlyList<MyModuleAttendanceSummaryDto> PerModule
 );
 
-public record MyAttendanceDto(
-    MyAttendanceSummaryDto Summary,
-    IReadOnlyList<AttendanceDayDto> Days
+public record MyAttendanceResponseDto(
+    MyAttendanceOverviewDto Overview,
+    PagedDto<MyAttendanceDayDto> Days
 );
 
-public record AdminStudentAttendanceSummaryDto(
+public record AdminStudentAttendanceRowDto(
     Guid StudentId,
     Guid UserId,
     string StudentNumber,
     string FirstName,
     string LastName,
-    int DaysPresent,
-    int TotalDays,
-    double AttendanceRate
+    int ExpectedSessionsTotal,
+    int AttendedSessionsTotal,
+    double? OverallPercent
 );
 
-public record AdminStudentAttendanceDetailDto(
+public record StaffModuleStudentAttendanceRowDto(
     Guid StudentId,
-    Guid UserId,
     string StudentNumber,
     string FirstName,
     string LastName,
-    DateOnly From,
-    DateOnly To,
-    int DaysPresent,
-    int DaysAbsent,
-    int TotalDays,
-    IReadOnlyList<AttendanceDayDto> Days
+    int ExpectedSessions,
+    int AttendedSessions,
+    double? AttendancePercent
 );
 
-public record UpsertAttendanceDto(
-    DateOnly Date,
-    bool Present,
-    string? Note
+public record AttendanceSettingsDto(
+    TimeOnly CheckInStartLocal,
+    TimeOnly CheckInEndLocal,
+    string TimeZoneId
 );
 
-public record UpdateAttendanceDto(
-    DateTimeOffset? FirstSeenAtUtc,
-    DateTimeOffset? LastSeenAtUtc,
-    int? LoginCount,
-    string? Note
-);
-
-public record AttendanceRangeQueryDto(
-    DateOnly From,
-    DateOnly To
-);
-
-public record AdminAttendanceSearchQueryDto(
-    DateOnly From,
-    DateOnly To,
-    string? Search,
-    int Page = 1,
-    int PageSize = 20
+public record UpdateAttendanceSettingsDto(
+    TimeOnly CheckInStartLocal,
+    TimeOnly CheckInEndLocal,
+    string TimeZoneId
 );

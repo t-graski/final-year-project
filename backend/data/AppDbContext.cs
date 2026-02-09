@@ -25,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<StudentCourseEnrollment> StudentCourseEnrollments => Set<StudentCourseEnrollment>();
     public DbSet<StudentModuleEnrollment> StudentModuleEnrollments => Set<StudentModuleEnrollment>();
     public DbSet<StudentAttendance> StudentAttendances => Set<StudentAttendance>();
+    public DbSet<AttendanceSettings> AttendanceSettings => Set<AttendanceSettings>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -123,14 +124,35 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.ToTable("modules");
             e.HasKey(x => x.Id);
+            
             e.Property(x => x.ModuleCode).IsRequired();
             e.Property(x => x.Title).IsRequired();
+            
+            e.Property(x => x.ScheduledDay).IsRequired();
+            e.Property(x => x.ScheduledStartLocal).IsRequired();
+            e.Property(x => x.ScheduledEndLocal).IsRequired();
+            
+            e.Property(x => x.RunsFrom).IsRequired();
+            e.Property(x => x.RunsTo).IsRequired();
+            
             e.HasIndex(x => new { x.CourseId, x.ModuleCode }).IsUnique();
 
             e.HasOne(x => x.Course)
                 .WithMany(c => c.Modules)
                 .HasForeignKey(x => x.CourseId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<AttendanceSettings>(e =>
+        {
+            e.ToTable("attendance_settings");
+
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.CheckInStartLocal).IsRequired();
+            e.Property(x => x.CheckInEndLocal).IsRequired();
+            e.Property(x => x.TimeZoneId).IsRequired().HasMaxLength(100);
+            e.Property(x => x.IsActive).IsRequired();
         });
 
         b.Entity<ModuleStaff>(e =>
@@ -236,13 +258,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasKey(x => x.Id);
 
             e.Property(x => x.Date).IsRequired();
+            e.Property(x => x.CheckedInAtUtc).IsRequired();
 
-            e.HasOne(x => x.Student)
-                .WithMany()
-                .HasForeignKey(x => x.StudentId)
-                .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.StudentId, x.ModuleId, x.Date }).IsUnique();
 
-            e.HasIndex(x => new { x.StudentId, x.Date }).IsUnique();
+            e.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
+            e.HasOne(x => x.Module).WithMany().HasForeignKey(x => x.ModuleId);
         });
     }
 

@@ -16,6 +16,13 @@ public class Module : SoftDeletableEntity<Guid>
     public int? SemesterOfStudy { get; set; }
     public string? Term { get; set; }
 
+    public DayOfWeek ScheduledDay { get; set; }
+    public TimeOnly ScheduledStartLocal { get; set; }
+    public TimeOnly ScheduledEndLocal { get; set; }
+    
+    public DateOnly RunsFrom { get; set; }
+    public DateOnly RunsTo { get; set; }
+
     public ICollection<ModuleStaff> TeachingStaff { get; set; } = new List<ModuleStaff>();
 
     public ICollection<StudentModuleEnrollment> StudentEnrollments { get; set; } = [];

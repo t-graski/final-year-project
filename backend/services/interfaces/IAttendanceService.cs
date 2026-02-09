@@ -6,11 +6,18 @@ public interface IAttendanceService
 {
     Task MarkStudentAttendanceOnLoginAsync(Guid userId, DateTimeOffset nowUtc);
 
-    Task<MyAttendanceDto> GetMyAttendanceAsync(Guid meUserId, DateOnly from, DateOnly to);
+    Task<MyAttendanceResponseDto> GetMyAttendanceAsync(Guid meUserId, DateOnly from, DateOnly to, int page,
+        int pageSize);
 
-    Task<PagedDto<AdminStudentAttendanceSummaryDto>> SearchStudentsAsync(AdminAttendanceSearchQueryDto q);
-    Task<AdminStudentAttendanceDetailDto> GetStudentAttendanceAsync(Guid studentId, DateOnly from, DateOnly to);
+    Task<PagedDto<AdminStudentAttendanceRowDto>> GetStudentsAttendanceAsync(DateOnly from, DateOnly to, string? search,
+        int page, int pageSize);
 
-    Task<AttendanceDayDto> UpsertStudentDayAsync(Guid studentId, UpsertAttendanceDto dto, Guid actorUserId);
-    Task DeleteStudentDayAsync(Guid studentId, DateOnly date);
+    Task<MyAttendanceResponseDto> GetStudentAttendanceAsync(Guid studentId, DateOnly from, DateOnly to, int page,
+        int pageSize);
+
+    Task<PagedDto<StaffModuleStudentAttendanceRowDto>> GetModuleAttendanceAsync(Guid moduleId, DateOnly from,
+        DateOnly to, string? search, int page, int pageSize);
+
+    Task<AttendanceSettingsDto> GetSettingsAsync();
+    Task<AttendanceSettingsDto> UpdateSettingsAsync(UpdateAttendanceSettingsDto dto);
 }
