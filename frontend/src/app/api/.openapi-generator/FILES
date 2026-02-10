@@ -2,11 +2,13 @@
 README.md
 api.base.service.ts
 api.module.ts
+api/adminAttendance.service.ts
 api/adminAudit.service.ts
 api/adminCatalog.service.ts
 api/adminEnrollment.service.ts
 api/adminUser.service.ts
 api/api.ts
+api/attendance.service.ts
 api/auth.service.ts
 api/enrollmentQueries.service.ts
 api/enrollments.service.ts
@@ -26,6 +28,9 @@ model/adminCreateUserDto.ts
 model/adminModuleDto.ts
 model/adminModuleDtoApiResponse.ts
 model/adminModuleDtoIReadOnlyListApiResponse.ts
+model/adminStudentAttendanceRowDto.ts
+model/adminStudentAttendanceRowDtoPagedDto.ts
+model/adminStudentAttendanceRowDtoPagedDtoApiResponse.ts
 model/adminUpdateUserDto.ts
 model/adminUserDetailDto.ts
 model/adminUserDetailDtoApiResponse.ts
@@ -33,6 +38,8 @@ model/adminUserListItemDto.ts
 model/adminUserListItemDtoIReadOnlyListApiResponse.ts
 model/apiError.ts
 model/assignRoleDto.ts
+model/attendanceSettingsDto.ts
+model/attendanceSettingsDtoApiResponse.ts
 model/auditEventDto.ts
 model/auditEventDtoIReadOnlyListApiResponse.ts
 model/authResultDto.ts
@@ -46,6 +53,7 @@ model/createCourseDto.ts
 model/createModuleDto.ts
 model/createRoleDto.ts
 model/createUserDto.ts
+model/dayOfWeek.ts
 model/enrollInCourseDto.ts
 model/enrollInModuleDto.ts
 model/loginDto.ts
@@ -57,6 +65,13 @@ model/moduleCardDtoApiResponse.ts
 model/moduleEnrollmentRowDto.ts
 model/moduleEnrollmentRowDtoIReadOnlyListApiResponse.ts
 model/moduleEnrollmentStatus.ts
+model/myAttendanceDayDto.ts
+model/myAttendanceDayDtoPagedDto.ts
+model/myAttendanceDayModuleDto.ts
+model/myAttendanceOverviewDto.ts
+model/myAttendanceResponseDto.ts
+model/myAttendanceResponseDtoApiResponse.ts
+model/myModuleAttendanceSummaryDto.ts
 model/objectApiResponse.ts
 model/permissionMetadataDto.ts
 model/permissionMetadataDtoIReadOnlyListApiResponse.ts
@@ -78,6 +93,7 @@ model/studentListItemDto.ts
 model/studentMiniDto.ts
 model/studentModuleHistoryRowDto.ts
 model/systemRole.ts
+model/updateAttendanceSettingsDto.ts
 model/updateCourseDto.ts
 model/updateModuleDto.ts
 model/updateRoleDto.ts
