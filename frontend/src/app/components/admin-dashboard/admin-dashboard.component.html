@@ -112,7 +112,7 @@
 
         @if ($currentView() === 'modules') {
           <app-admin-modules-tab
-            [courses]="$courses()"
+            [$courses]="$courses()"
             (viewEnrollments)="handleViewModuleEnrollments($event)"
           ></app-admin-modules-tab>
         }

@@ -1,103 +1,109 @@
-import {Component, computed, inject, signal} from '@angular/core';
-import {toSignal} from '@angular/core/rxjs-interop';
-import {NavLink} from '../../shared/models/nav-link.model';
-import {Navbar} from '../navbar/navbar';
+import {Component, computed, effect, inject, signal} from '@angular/core';
 import {Card} from '../card/card';
 import {MatIconModule} from '@angular/material/icon';
-import {ProgressBar} from '../progress-bar/progress-bar';
-import {AttendanceColorPipe} from '../../shared/pipes/attendance-color-pipe';
-import {FormsModule} from '@angular/forms';
-import {UserService} from '../../services/user.service';
-
-type Student = {
-  name: string;
-  id: string;
-  course: string;
-  year: number;
-  attendance: number;
-  attendanceTrend: string;
-  attendanceScore: string;
-}
+import {AttendanceService} from '../../api';
+import {MyAttendanceResponseDto} from '../../api';
+import {AttendanceOverview} from './components/attendance-overview/attendance-overview';
+import {ModuleSummary} from './components/module-summary/module-summary';
+import {DailyAttendance} from './components/daily-attendance/daily-attendance';
+import {DateRangePicker, DateRange} from './components/date-range-picker/date-range-picker';
+import {catchError, of} from 'rxjs';
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-attendance-management',
   imports: [
     Card,
     MatIconModule,
-    ProgressBar,
-    AttendanceColorPipe,
-    FormsModule,
+    AttendanceOverview,
+    ModuleSummary,
+    DailyAttendance,
+    DateRangePicker
   ],
   templateUrl: './attendance-management.html',
   styleUrl: './attendance-management.component.scss',
 })
 export class AttendanceManagement {
-  private readonly userService = inject(UserService);
+  private readonly attendanceService = inject(AttendanceService);
 
-  readonly currentUser = toSignal(this.userService.currentUser$);
-
-  readonly welcomeMessage = computed(() => {
-    const user = this.currentUser();
-    return user?.email ? `Welcome back, ${user.email}` : 'Welcome back, Guest';
+  $dateRange = signal<DateRange>({
+    from: this.getDefaultFromDate(),
+    to: this.getDefaultToDate()
   });
 
-  headline = "Student Dashboard";
+  $currentPage = signal(1);
+  $pageSize = signal(20);
 
-  navLinks: NavLink[] = [];
+  $attendanceData = signal<MyAttendanceResponseDto | null>(null);
+  $isLoading = signal(false);
+  $error = signal<string | null>(null);
 
-  toggleOptions = signal([
-    {id: 'my-courses', label: 'My Courses'},
-    {id: 'global', label: 'Global'}
-  ]);
+  $overview = computed(() => this.$attendanceData()?.overview ?? null);
+  $modules = computed(() => this.$attendanceData()?.overview?.perModule ?? []);
+  $days = computed(() => this.$attendanceData()?.days?.items ?? []);
+  $totalDays = computed(() => this.$attendanceData()?.days?.total ?? 0);
+  $totalPages = computed(() => {
+    const total = this.$totalDays();
+    const size = this.$pageSize();
+    return total > 0 ? Math.ceil(total / size) : 0;
+  });
+  $hasMorePages = computed(() => {
+    const currentPage = this.$currentPage();
+    const totalPages = this.$totalPages();
+    return currentPage < totalPages;
+  });
 
-  activeToggle = signal('my-courses');
-
-  setActive(id: string) {
-    this.activeToggle.set(id);
+  constructor() {
+    // Load data when date range or page changes
+    effect(() => {
+      const range = this.$dateRange();
+      const page = this.$currentPage();
+      this.loadAttendanceData(range, page);
+    });
   }
 
+  private getDefaultFromDate(): string {
+    const date = new Date();
+    date.setDate(date.getDate() - 30); // Last 30 days
+    return date.toISOString().split('T')[0];
+  }
 
-  students = signal<Student[]>([
-    {
-      name: "John Doe",
-      id: "w1988854",
-      course: "Computer Science",
-      year: 3,
-      attendance: 92,
-      attendanceTrend: "improving",
-      attendanceScore: "Low Risk"
-    },
-    {
-      name: "Jane Smith",
-      id: "w1988855",
-      course: "Information Technology",
-      year: 2,
-      attendance: 76,
-      attendanceTrend: "declining",
-      attendanceScore: "Medium Risk"
-    },
-    {
-      name: "Alice Johnson",
-      id: "w1988856",
-      course: "Software Engineering",
-      year: 1,
-      attendance: 58,
-      attendanceTrend: "declining",
-      attendanceScore: "High Risk"
-    }
-  ]);
+  private getDefaultToDate(): string {
+    return new Date().toISOString().split('T')[0];
+  }
 
-  searchText = signal<string>("");
+  loadAttendanceData(range: DateRange, page: number) {
+    this.$isLoading.set(true);
+    this.$error.set(null);
 
-  filteredStudents = computed<Array<Student>>(() => {
-    const search = this.searchText().trim().toLowerCase();
-
-    if (!search) return this.students();
-
-    return this.students().filter(s => {
-      return s.name.toLowerCase().includes(search) ||
-        s.id.toString().includes(search);
+    this.attendanceService.apiAttendanceMeGet(
+      range.from,
+      range.to,
+      page,
+      this.$pageSize()
+    ).pipe(
+      catchError(err => {
+        this.$error.set('Failed to load attendance data. Please try again.');
+        console.error('Error loading attendance:', err);
+        return of(null);
+      })
+    ).subscribe(response => {
+      this.$isLoading.set(false);
+      if (response?.data) {
+        this.$attendanceData.set(response.data);
+      }
     });
-  });
+  }
+
+  loadNextPage() {
+    if (this.$hasMorePages() && !this.$isLoading()) {
+      this.$currentPage.update(p => p + 1);
+    }
+  }
+
+  loadPreviousPage() {
+    if (this.$currentPage() > 1 && !this.$isLoading()) {
+      this.$currentPage.update(p => p - 1);
+    }
+  }
 }
 

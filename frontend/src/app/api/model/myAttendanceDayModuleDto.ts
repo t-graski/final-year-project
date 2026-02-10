@@ -12,6 +12,9 @@
 export interface MyAttendanceDayModuleDto { 
     moduleId?: string;
     moduleName?: string | null;
-    checkedInAtUtc?: string;
+    isAttended?: boolean;
+    checkedInAtUtc?: string | null;
+    scheduledStartLocal?: string;
+    scheduledEndLocal?: string;
 }
 

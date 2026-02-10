@@ -91,7 +91,7 @@ public class AttendanceService(AppDbContext db) : IAttendanceService
             throw new AppException(404, "STUDENT_NOT_FOUND", "Student profile not found.");
         }
 
-        return await GetStudentAttendanceCoreASync(studentId.Value, from, to, page, pageSize);
+        return await GetStudentAttendanceCoreAsync(studentId.Value, from, to, page, pageSize);
     }
 
     private sealed record ExpectedEnrollmentRow(
@@ -185,7 +185,7 @@ public class AttendanceService(AppDbContext db) : IAttendanceService
     }
 
     public Task<MyAttendanceResponseDto> GetStudentAttendanceAsync(Guid studentId, DateOnly from, DateOnly to, int page,
-        int pageSize) => GetStudentAttendanceCoreASync(studentId, from, to, page, pageSize);
+        int pageSize) => GetStudentAttendanceCoreAsync(studentId, from, to, page, pageSize);
 
     public async Task<PagedDto<StaffModuleStudentAttendanceRowDto>> GetModuleAttendanceAsync(Guid moduleId,
         DateOnly from,
@@ -291,7 +291,7 @@ public class AttendanceService(AppDbContext db) : IAttendanceService
         return new AttendanceSettingsDto(s.CheckInStartLocal, s.CheckInEndLocal, s.TimeZoneId);
     }
 
-    private async Task<MyAttendanceResponseDto> GetStudentAttendanceCoreASync(Guid studentId, DateOnly from,
+    private async Task<MyAttendanceResponseDto> GetStudentAttendanceCoreAsync(Guid studentId, DateOnly from,
         DateOnly to, int page, int pageSize)
     {
         page = Math.Max(1, page);
@@ -307,6 +307,8 @@ public class AttendanceService(AppDbContext db) : IAttendanceService
                 m.ModuleCode,
                 m.Title,
                 m.ScheduledDay,
+                m.ScheduledStartLocal,
+                m.ScheduledEndLocal,
                 m.RunsFrom,
                 m.RunsTo
             }
@@ -329,20 +331,22 @@ public class AttendanceService(AppDbContext db) : IAttendanceService
 
         foreach (var m in modules)
         {
-            var expected = CountScheduledOccurrences(from, to, m.ScheduledDay);
+            var effectiveFrom = Max(from, m.RunsFrom);
+            var effectiveTo = Min(to, m.RunsTo);
+            var expected = CountScheduledOccurrences(effectiveFrom, effectiveTo, m.ScheduledDay);
             var attended = attendedPerModuleDict.GetValueOrDefault(m.Id, 0);
 
             expectedTotal += expected;
 
             perModule.Add(new MyModuleAttendanceSummaryDto(
                 m.Id,
-                m.ModuleCode,
+                $"{m.ModuleCode} - {m.Title}",
                 m.ScheduledDay,
                 m.RunsFrom,
                 m.RunsTo,
                 expected,
                 attended,
-                expectedTotal == 0 ? null : (double)attended / expected
+                expected == 0 ? null : (double)attended / expected
             ));
         }
 
@@ -356,16 +360,31 @@ public class AttendanceService(AppDbContext db) : IAttendanceService
             overallPct,
             perModule.OrderBy(x => x.ModuleName).ToList());
 
-        var datesQ = attInRangeQ.Select(a => a.Date).Distinct();
-        var totalDaysPresent = await datesQ.CountAsync();
+        var allRelevantDates = new HashSet<DateOnly>();
+        foreach (var m in modules)
+        {
+            var effectiveFrom = Max(from, m.RunsFrom);
+            var effectiveTo = Min(to, m.RunsTo);
+            
+            for (var d = effectiveFrom; d.DayNumber <= effectiveTo.DayNumber; d = d.AddDays(1))
+            {
+                var dow = d.ToDateTime(TimeOnly.MinValue).DayOfWeek;
+                if (dow == m.ScheduledDay)
+                {
+                    allRelevantDates.Add(d);
+                }
+            }
+        }
 
-        var pageDates = await datesQ
+        var totalDaysWithSchedule = allRelevantDates.Count;
+
+        var pageDates = allRelevantDates
             .OrderByDescending(d => d)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync();
+            .ToList();
 
-        var dayDetails = await (
+        var dayAttendance = await (
             from a in db.StudentAttendances
             join m in db.Modules on a.ModuleId equals m.Id
             where a.StudentId == studentId
@@ -374,29 +393,48 @@ public class AttendanceService(AppDbContext db) : IAttendanceService
             select new
             {
                 a.Date,
-                m.Id,
-                m.ModuleCode,
+                a.ModuleId,
                 a.CheckedInAtUtc
             }
         ).ToListAsync();
+
+        var attendanceByDateAndModule = dayAttendance
+            .ToDictionary(x => (x.Date, x.ModuleId), x => x.CheckedInAtUtc);
 
         var days = pageDates
             .OrderByDescending(d => d)
             .Select(d =>
             {
-                var mods = dayDetails
-                    .Where(x => x.Date == d)
-                    .OrderBy(x => x.ModuleCode)
-                    .Select(x => new MyAttendanceDayModuleDto(x.Id, x.ModuleCode, x.CheckedInAtUtc))
+                var dow = d.ToDateTime(TimeOnly.MinValue).DayOfWeek;
+                
+                var scheduledModules = modules
+                    .Where(m => m.ScheduledDay == dow && d >= m.RunsFrom && d <= m.RunsTo)
+                    .OrderBy(m => m.ScheduledStartLocal)
+                    .ThenBy(m => m.ModuleCode)
+                    .Select(m =>
+                    {
+                        var key = (d, m.Id);
+                        var isAttended = attendanceByDateAndModule.TryGetValue(key, out var checkedInAt);
+                        return new MyAttendanceDayModuleDto(
+                            m.Id, 
+                            $"{m.ModuleCode} - {m.Title}",
+                            isAttended,
+                            isAttended ? checkedInAt : null,
+                            m.ScheduledStartLocal, 
+                            m.ScheduledEndLocal
+                        );
+                    })
                     .ToList();
 
-                return new MyAttendanceDayDto(d, mods.Count, mods);
+                var attendedCount = scheduledModules.Count(m => m.IsAttended);
+
+                return new MyAttendanceDayDto(d, attendedCount, scheduledModules);
             })
             .ToList();
 
         return new MyAttendanceResponseDto(
             overview,
-            new PagedDto<MyAttendanceDayDto>(days, page, pageSize, totalDaysPresent)
+            new PagedDto<MyAttendanceDayDto>(days, page, pageSize, totalDaysWithSchedule)
         );
     }
 
@@ -473,11 +511,5 @@ public class AttendanceService(AppDbContext db) : IAttendanceService
         }
 
         return dict;
-    }
-
-    private static int CountDaysInclusive(DateOnly from, DateOnly to)
-    {
-        if (to < from) return 0;
-        return to.DayNumber - from.DayNumber + 1;
     }
 }

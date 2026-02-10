@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { DayOfWeek } from './dayOfWeek';
 
 
 export interface UpdateModuleDto { 
@@ -17,5 +18,13 @@ export interface UpdateModuleDto {
     level?: number | null;
     semesterOfStudy?: number | null;
     term?: string | null;
+    runsFrom?: string;
+    runsTo?: string;
+    scheduledDay?: DayOfWeek;
+    scheduledStartLocal?: string;
+    scheduledEndLocal?: string;
 }
+export namespace UpdateModuleDto {
+}
+
 

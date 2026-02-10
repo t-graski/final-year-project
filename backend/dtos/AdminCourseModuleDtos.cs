@@ -30,7 +30,12 @@ public record AdminModuleDto(
     int? Credits,
     int? Level,
     int? SemesterOfStudy,
-    string? Term
+    string? Term,
+    DateOnly RunsFrom,
+    DateOnly RunsTo,
+    DayOfWeek ScheduledDay,
+    TimeOnly ScheduledStartLocal,
+    TimeOnly ScheduledEndLocal
 );
 
 public record CreateCourseDto(
@@ -58,7 +63,12 @@ public record CreateModuleDto(
     int? Credits,
     int? Level,
     int? SemesterOfStudy,
-    string? Term
+    string? Term,
+    DateOnly RunsFrom,
+    DateOnly RunsTo,
+    DayOfWeek ScheduledDay,
+    TimeOnly ScheduledStartLocal,
+    TimeOnly ScheduledEndLocal
 );
 
 public record UpdateModuleDto(
@@ -68,6 +78,10 @@ public record UpdateModuleDto(
     int? Credits,
     int? Level,
     int? SemesterOfStudy,
-    string? Term
+    string? Term,
+    DateOnly RunsFrom,
+    DateOnly RunsTo,
+    DayOfWeek ScheduledDay,
+    TimeOnly ScheduledStartLocal,
+    TimeOnly ScheduledEndLocal
 );
-

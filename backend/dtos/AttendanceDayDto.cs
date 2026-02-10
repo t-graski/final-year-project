@@ -3,7 +3,10 @@
 public record MyAttendanceDayModuleDto(
     Guid ModuleId,
     string ModuleName,
-    DateTimeOffset CheckedInAtUtc
+    bool IsAttended,
+    DateTimeOffset? CheckedInAtUtc,
+    TimeOnly ScheduledStartLocal,
+    TimeOnly ScheduledEndLocal
 );
 
 public record MyAttendanceDayDto(

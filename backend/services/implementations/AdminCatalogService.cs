@@ -58,7 +58,12 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
                         m.Credits,
                         m.Level,
                         m.SemesterOfStudy,
-                        m.Term
+                        m.Term,
+                        m.RunsFrom,
+                        m.RunsTo,
+                        m.ScheduledDay,
+                        m.ScheduledStartLocal,
+                        m.ScheduledEndLocal
                     ))
                     .ToList()
             ))
@@ -131,7 +136,12 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
                 m.Credits,
                 m.Level,
                 m.SemesterOfStudy,
-                m.Term
+                m.Term,
+                m.RunsFrom,
+                m.RunsTo,
+                m.ScheduledDay,
+                m.ScheduledStartLocal,
+                m.ScheduledEndLocal
             ))
             .ToListAsync();
     }
@@ -149,7 +159,12 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
                 m.Credits,
                 m.Level,
                 m.SemesterOfStudy,
-                m.Term
+                m.Term,
+                m.RunsFrom,
+                m.RunsTo,
+                m.ScheduledDay,
+                m.ScheduledStartLocal,
+                m.ScheduledEndLocal
             ))
             .FirstOrDefaultAsync();
 
@@ -175,7 +190,12 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
             Credits = dto.Credits,
             Level = dto.Level,
             SemesterOfStudy = dto.SemesterOfStudy,
-            Term = dto.Term?.Trim()
+            Term = dto.Term?.Trim(),
+            RunsFrom = dto.RunsFrom,
+            RunsTo = dto.RunsTo,
+            ScheduledDay = dto.ScheduledDay,
+            ScheduledStartLocal = dto.ScheduledStartLocal,
+            ScheduledEndLocal = dto.ScheduledEndLocal
         };
 
         db.Modules.Add(module);
@@ -196,6 +216,10 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
         module.Level = dto.Level;
         module.SemesterOfStudy = dto.SemesterOfStudy;
         module.Term = dto.Term?.Trim();
+        module.RunsFrom = dto.RunsFrom;
+        module.RunsTo = dto.RunsTo;
+        module.ScheduledDay = dto.ScheduledDay;
+        module.ScheduledStartLocal = dto.ScheduledStartLocal;
         await db.SaveChangesAsync();
 
         return await GetModuleAsync(id);

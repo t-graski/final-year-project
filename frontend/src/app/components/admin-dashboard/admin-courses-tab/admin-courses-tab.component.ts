@@ -1,7 +1,7 @@
 ﻿import {Component, inject, signal, output, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
-import {AdminCatalogService, CreateCourseDto} from '../../../api';
+import {AdminCatalogService} from '../../../api';
 import {SnackbarService} from '../../../services/snackbar.service';
 import {AdminCourseDto} from '../../../api';
 import {DynamicTableComponent, TableColumn, TableAction} from '../../dynamic-table/dynamic-table.component';
@@ -25,7 +25,14 @@ export class AdminCoursesTabComponent implements OnInit {
   $showCreateCourseModal = signal<boolean>(false);
   $showEditCourseModal = signal<string | null>(null);
 
-  $newCourse = signal<AdminCourseDto>({});
+  $newCourse = signal<AdminCourseDto>({
+    courseCode: '',
+    title: '',
+    description: '',
+    award: '',
+    durationSemesters: 0,
+    isActive: true
+  });
 
   $editCourseData = signal<AdminCourseDto>({});
 
@@ -122,21 +129,12 @@ export class AdminCoursesTabComponent implements OnInit {
   }
 
   editCourse(course: AdminCourseDto): void {
-    this.$editCourseData.set({
-      id: course.id || '',
-      courseCode: course.courseCode || '',
-      title: course.title || '',
-      description: course.description || '',
-      award: course.award || '',
-      durationSemesters: course.durationSemesters || 0,
-      isActive: course.isActive ?? true
-    });
+    this.$editCourseData.set({...course});
     this.$showEditCourseModal.set(course.id!);
   }
 
   cloneCourse(course: AdminCourseDto): void {
     this.$newCourse.set({
-      id: `${course.id}-COPY`,
       courseCode: `${course.courseCode}-COPY`,
       title: `${course.title} (Copy)`,
       description: course.description || '',
@@ -194,7 +192,6 @@ export class AdminCoursesTabComponent implements OnInit {
         this.snackbarService.showFromApiResponse(response);
         this.closeCreateCourseModal();
         this.$newCourse.set({
-          id: '',
           courseCode: '',
           title: '',
           description: '',
@@ -214,12 +211,6 @@ export class AdminCoursesTabComponent implements OnInit {
 
   updateCourse(): void {
     const course = this.$editCourseData();
-    if (!course.courseCode || !course.title) {
-      this.snackbarService.show('Please fill required fields', 400);
-      return;
-    }
-
-    this.snackbarService.show('Update course feature temporarily disabled during refactoring', 400);
     this.adminCatalogService.apiAdminCoursesIdPut(course.id!, {
       courseCode: course.courseCode,
       title: course.title,
