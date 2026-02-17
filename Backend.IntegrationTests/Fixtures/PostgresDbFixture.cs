@@ -1,4 +1,5 @@
 ﻿using backend.data;
+using backend.services.implementations;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 
@@ -7,7 +8,7 @@ namespace Backend.IntegrationTests.Fixtures;
 public sealed class PostgresDbFixture : IAsyncDisposable
 {
     private readonly PostgreSqlContainer _db = new PostgreSqlBuilder("postgres:16-alpine")
-        .WithDatabase("testdb")
+        .WithDatabase("testing_db")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();
@@ -32,9 +33,11 @@ public sealed class PostgresDbFixture : IAsyncDisposable
 
         var ctx = new AppDbContext(options);
 
-        // simplest isolation:
         await ctx.Database.EnsureDeletedAsync();
-        await ctx.Database.MigrateAsync(); 
+        await ctx.Database.MigrateAsync();
+
+        var bootstrap = new BootstrapService(ctx);
+        await bootstrap.Boostrap();
 
         return ctx;
     }

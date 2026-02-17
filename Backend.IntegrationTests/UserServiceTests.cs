@@ -15,7 +15,8 @@ namespace Backend.IntegrationTests;
 public class UserServiceTests(PostgresDbFixture fx) : IClassFixture<PostgresDbFixture>
 {
     private static UserService CreateSut(AppDbContext db, FakeCurrentUser? currentUser = null)
-        => new UserService(db, new FakeTokenService(), currentUser ?? new FakeCurrentUser { IsAuthenticated = false });
+        => new UserService(db, new FakeTokenService(), currentUser ?? new FakeCurrentUser { IsAuthenticated = false },
+            new FakeAttendanceService());
 
     private static string Hash(string plain) => BCrypt.Net.BCrypt.HashPassword(plain);
 
@@ -41,21 +42,41 @@ public class UserServiceTests(PostgresDbFixture fx) : IClassFixture<PostgresDbFi
         return user;
     }
 
-    private static async Task SeedRoleAsync(
+    private static async Task<Role> SeedRoleAsync(AppDbContext db, string key, string name, Permission permissions,
+        int rank = 999, bool isDeleted = false, CancellationToken ct = default)
+    {
+        var role = new Role
+        {
+            Key = key,
+            Name = name,
+            Permissions = (long)permissions,
+            Rank = rank,
+            IsSystem = false,
+            IsDeleted = isDeleted
+        };
+
+        db.Roles.Add(role);
+        await db.SaveChangesAsync(ct);
+        return role;
+    }
+
+    private static async Task<UserRole> SeedUserRoleAsync(
         AppDbContext db,
         Guid userId,
-        SystemRole role,
+        Role role,
         bool isDeleted = false,
         CancellationToken ct = default)
     {
-        db.UserRoles.Add(new UserRole
+        var userRole = new UserRole
         {
             UserId = userId,
             Role = role,
             IsDeleted = isDeleted
-        });
+        };
 
+        db.UserRoles.Add(userRole);
         await db.SaveChangesAsync(ct);
+        return userRole;
     }
 
     [Fact]
@@ -108,7 +129,9 @@ public class UserServiceTests(PostgresDbFixture fx) : IClassFixture<PostgresDbFi
         var user = await db.Users.SingleAsync(u => u.Email == email, TestContext.Current.CancellationToken);
 
         var role = await db.UserRoles.SingleAsync(r => r.UserId == user.Id, TestContext.Current.CancellationToken);
-        role.Role.Should().Be(SystemRole.Admin);
+        role.Role.Key.Should().Be("admin");
+        role.Role.Name.Should().Be("Administrator");
+
 
         var staff = await db.Staff.SingleAsync(s => s.UserId == user.Id, TestContext.Current.CancellationToken);
         staff.StaffNumber.Should().NotBeNullOrWhiteSpace();
@@ -273,5 +296,58 @@ public class UserServiceTests(PostgresDbFixture fx) : IClassFixture<PostgresDbFi
         var res = await sut.LoginAsync(new LoginDto("  NoRm@Example.Com ", "Correct123!?"));
 
         res.Email.Should().Be("norm@example.com");
+    }
+
+    [Fact]
+    public async Task GetMeAsync_when_user_not_found_throws_404()
+    {
+        await using var db = await fx.CreateDbContextAsync();
+        var sut = CreateSut(db);
+
+        var act = async () => await sut.GetMeAsync(Guid.Empty);
+
+        var ex = await Assert.ThrowsAsync<AppException>(act);
+        ex.StatusCode.Should().Be(404);
+        ex.ErrorCode.Should().Be("USER_NOT_FOUND");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_excludes_roles_where_user_role_link_is_deleted()
+    {
+        await using var db = await fx.CreateDbContextAsync();
+        var sut = CreateSut(db);
+
+        var user = await SeedUserAsync(db, "user@example.com", "Test123!?", ct: TestContext.Current.CancellationToken);
+        var role1 = await SeedRoleAsync(db, "role1", "role1", Permission.AuditRead, 1,
+            ct: TestContext.Current.CancellationToken);
+        var role2 = await SeedRoleAsync(db, "role2", "role2", Permission.AuditRead, 2,
+            ct: TestContext.Current.CancellationToken);
+
+        await SeedUserRoleAsync(db, user.Id, role1, ct: TestContext.Current.CancellationToken);
+        await SeedUserRoleAsync(db, user.Id, role2, true, ct: TestContext.Current.CancellationToken);
+
+        var res = await sut.GetByIdAsync(user.Id);
+        res.Roles.Count().Should().Be(1);
+        res.Roles.First().Key.Should().Be("role1");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_excludes_roles_where_role_is_deleted()
+    {
+        await using var db = await fx.CreateDbContextAsync();
+        var sut = CreateSut(db);
+
+        var user = await SeedUserAsync(db, "user@example.com", "Test123!?", ct: TestContext.Current.CancellationToken);
+        var role1 = await SeedRoleAsync(db, "role1", "role1", Permission.AuditRead, 1,
+            ct: TestContext.Current.CancellationToken);
+        var role2 = await SeedRoleAsync(db, "role2", "role2", Permission.AuditRead, 2,
+            true, ct: TestContext.Current.CancellationToken);
+
+        await SeedUserRoleAsync(db, user.Id, role1, ct: TestContext.Current.CancellationToken);
+        await SeedUserRoleAsync(db, user.Id, role2, ct: TestContext.Current.CancellationToken);
+
+        var res = await sut.GetByIdAsync(user.Id);
+        res.Roles.Count().Should().Be(1);
+        res.Roles.First().Key.Should().Be("role1");
     }
 }

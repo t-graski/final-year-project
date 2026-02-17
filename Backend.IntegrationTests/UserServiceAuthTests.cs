@@ -13,7 +13,7 @@ namespace Backend.IntegrationTests;
 public class UserServiceAuthTests(PostgresDbFixture fx) : IClassFixture<PostgresDbFixture>
 {
     private UserService CreateSut(AppDbContext db)
-        => new UserService(db, new FakeTokenService(), new FakeCurrentUser() { IsAuthenticated = false });
+        => new UserService(db, new FakeTokenService(), new FakeCurrentUser() { IsAuthenticated = false }, new FakeAttendanceService());
 
     [Fact]
     public async Task RegisterAsync_creates_user_role_and_student_when_role_student()
