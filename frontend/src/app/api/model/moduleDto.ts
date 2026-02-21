@@ -8,25 +8,34 @@
  * Do not edit the class manually.
  */
 import { DayOfWeek } from './dayOfWeek';
+import { ModuleElementDto } from './moduleElementDto';
+import { ModuleMemberDto } from './moduleMemberDto';
 
 
-export interface CreateModuleDto { 
+export interface ModuleDto { 
+    id?: string;
+    courseId?: string;
+    courseCode?: string | null;
+    courseTitle?: string | null;
     moduleCode?: string | null;
     title?: string | null;
     description?: string | null;
     credits?: number | null;
     level?: number | null;
-    academicYear?: number | null;
-    semesterOfStudy?: number | null;
-    term?: string | null;
+    academicYear?: number;
+    yearOfStudy?: number;
+    semester?: number;
     isCore?: boolean;
     runsFrom?: string;
     runsTo?: string;
     scheduledDay?: DayOfWeek;
     scheduledStartLocal?: string;
     scheduledEndLocal?: string;
+    students?: Array<ModuleMemberDto> | null;
+    staff?: Array<ModuleMemberDto> | null;
+    elements?: Array<ModuleElementDto> | null;
 }
-export namespace CreateModuleDto {
+export namespace ModuleDto {
 }
 
 

@@ -13,6 +13,7 @@ api/auth.service.ts
 api/enrollmentQueries.service.ts
 api/enrollments.service.ts
 api/me.service.ts
+api/module.service.ts
 api/permission.service.ts
 api/role.service.ts
 api/user.service.ts
@@ -51,6 +52,7 @@ model/courseEnrollmentRowDtoIReadOnlyListApiResponse.ts
 model/courseEnrollmentStatus.ts
 model/createCourseDto.ts
 model/createModuleDto.ts
+model/createModuleElementDto.ts
 model/createRoleDto.ts
 model/createUserDto.ts
 model/dayOfWeek.ts
@@ -62,9 +64,15 @@ model/loginEventDtoIReadOnlyListApiResponse.ts
 model/models.ts
 model/moduleCardDto.ts
 model/moduleCardDtoApiResponse.ts
+model/moduleDto.ts
+model/moduleDtoApiResponse.ts
+model/moduleElementDto.ts
+model/moduleElementDtoApiResponse.ts
+model/moduleElementType.ts
 model/moduleEnrollmentRowDto.ts
 model/moduleEnrollmentRowDtoIReadOnlyListApiResponse.ts
 model/moduleEnrollmentStatus.ts
+model/moduleMemberDto.ts
 model/myAttendanceDayDto.ts
 model/myAttendanceDayDtoPagedDto.ts
 model/myAttendanceDayModuleDto.ts
@@ -76,6 +84,7 @@ model/objectApiResponse.ts
 model/permissionMetadataDto.ts
 model/permissionMetadataDtoIReadOnlyListApiResponse.ts
 model/registerDto.ts
+model/reorderModuleElementsDto.ts
 model/roleDto.ts
 model/roleDtoApiResponse.ts
 model/roleDtoIReadOnlyListApiResponse.ts
@@ -96,6 +105,7 @@ model/systemRole.ts
 model/updateAttendanceSettingsDto.ts
 model/updateCourseDto.ts
 model/updateModuleDto.ts
+model/updateModuleElementDto.ts
 model/updateRoleDto.ts
 model/userDetailDto.ts
 model/userDetailDtoApiResponse.ts

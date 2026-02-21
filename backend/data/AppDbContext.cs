@@ -124,23 +124,65 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.ToTable("modules");
             e.HasKey(x => x.Id);
-            
+
             e.Property(x => x.ModuleCode).IsRequired();
             e.Property(x => x.Title).IsRequired();
-            
+
             e.Property(x => x.ScheduledDay).IsRequired();
             e.Property(x => x.ScheduledStartLocal).IsRequired();
             e.Property(x => x.ScheduledEndLocal).IsRequired();
-            
+
+            e.Property(x => x.IsCore).HasDefaultValue(true);
+
             e.Property(x => x.RunsFrom).IsRequired();
             e.Property(x => x.RunsTo).IsRequired();
-            
+
             e.HasIndex(x => new { x.CourseId, x.ModuleCode }).IsUnique();
 
             e.HasOne(x => x.Course)
                 .WithMany(c => c.Modules)
                 .HasForeignKey(x => x.CourseId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasMany(x => x.Elements)
+                .WithOne(x => x.Module)
+                .HasForeignKey(x => x.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<ModuleElement>(e =>
+        {
+            e.ToTable("module_elements");
+
+            e.Property(x => x.Type).IsRequired();
+            e.Property(x => x.SortOrder).IsRequired();
+
+            e.Property(x => x.Options)
+                .HasColumnType("jsonb")
+                .HasDefaultValueSql("'{}'::jsonb");
+
+            e.HasIndex(x => new { x.ModuleId, x.SortOrder }).IsUnique();
+            e.HasIndex(x => new { x.ModuleId, x.Type });
+        });
+
+        b.Entity<ModuleFile>(e =>
+        {
+            e.ToTable("module_files");
+            e.Property(x => x.OriginalFileName).IsRequired();
+            e.Property(x => x.StorageKey).IsRequired();
+            e.HasIndex(x => x.ModuleId);
+        });
+
+        b.Entity<AssessmentGrade>(e =>
+        {
+            e.ToTable("assessment_grades");
+
+            e.HasIndex(x => new { x.AssessmentElementId, x.StudentId }).IsUnique();
+
+            e.HasOne(x => x.AssessmentElement)
+                .WithMany()
+                .HasForeignKey(x => x.AssessmentElementId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<AttendanceSettings>(e =>
@@ -331,7 +373,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         return result;
     }
 
-    private static readonly HashSet<string> SensitiveProps = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> SensitiveProps = new(StringComparer.OrdinalIgnoreCase)
     {
         "PasswordHash",
         "RefreshToken",

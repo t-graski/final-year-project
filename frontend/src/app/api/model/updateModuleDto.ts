@@ -16,8 +16,10 @@ export interface UpdateModuleDto {
     description?: string | null;
     credits?: number | null;
     level?: number | null;
+    academicYear?: number | null;
     semesterOfStudy?: number | null;
     term?: string | null;
+    isCore?: boolean;
     runsFrom?: string;
     runsTo?: string;
     scheduledDay?: DayOfWeek;

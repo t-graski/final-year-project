@@ -57,8 +57,10 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
                         m.Description,
                         m.Credits,
                         m.Level,
+                        m.AcademicYear,
                         m.SemesterOfStudy,
                         m.Term,
+                        m.IsCore,
                         m.RunsFrom,
                         m.RunsTo,
                         m.ScheduledDay,
@@ -135,8 +137,10 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
                 m.Description,
                 m.Credits,
                 m.Level,
+                m.AcademicYear,
                 m.SemesterOfStudy,
                 m.Term,
+                m.IsCore,
                 m.RunsFrom,
                 m.RunsTo,
                 m.ScheduledDay,
@@ -158,8 +162,10 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
                 m.Description,
                 m.Credits,
                 m.Level,
+                m.AcademicYear,
                 m.SemesterOfStudy,
                 m.Term,
+                m.IsCore,
                 m.RunsFrom,
                 m.RunsTo,
                 m.ScheduledDay,
@@ -189,8 +195,10 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
             Description = dto.Description?.Trim(),
             Credits = dto.Credits,
             Level = dto.Level,
+            AcademicYear = dto.AcademicYear,
             SemesterOfStudy = dto.SemesterOfStudy,
             Term = dto.Term?.Trim(),
+            IsCore = dto.IsCore,
             RunsFrom = dto.RunsFrom,
             RunsTo = dto.RunsTo,
             ScheduledDay = dto.ScheduledDay,
@@ -214,8 +222,10 @@ public class AdminCatalogService(AppDbContext db) : IAdminCatalogService
         module.Description = dto.Description?.Trim();
         module.Credits = dto.Credits;
         module.Level = dto.Level;
+        module.AcademicYear = dto.AcademicYear;
         module.SemesterOfStudy = dto.SemesterOfStudy;
         module.Term = dto.Term?.Trim();
+        module.IsCore = dto.IsCore;
         module.RunsFrom = dto.RunsFrom;
         module.RunsTo = dto.RunsTo;
         module.ScheduledDay = dto.ScheduledDay;

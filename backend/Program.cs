@@ -91,18 +91,20 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<ICurrentUser, CurrentUser>();
-builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
-builder.Services.AddScoped<IAdminUserService, AdminUserService>();
+
 builder.Services.AddScoped<IAdminCatalogService, AdminCatalogService>();
 builder.Services.AddScoped<IAdminEnrollmentService, AdminEnrollmentService>();
-builder.Services.AddScoped<IEnrollmentQueryService, EnrollmentQueryService>();
+builder.Services.AddScoped<IAdminUserService, AdminUserService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IBootstrapService, BootstrapService>();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+builder.Services.AddScoped<IModuleService, ModuleService>();
+builder.Services.AddScoped<IEnrollmentQueryService, EnrollmentQueryService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddHttpContextAccessor();
 
